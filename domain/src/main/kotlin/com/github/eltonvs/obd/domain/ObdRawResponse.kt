@@ -1,6 +1,6 @@
 package com.github.eltonvs.obd.domain
 
 data class ObdRawResponse(
-    val rawValue: String,
+    val value: String,
     val elapsedTime: Long
 )
