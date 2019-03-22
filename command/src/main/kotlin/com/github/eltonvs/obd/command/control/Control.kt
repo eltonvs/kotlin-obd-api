@@ -44,21 +44,21 @@ class VINCommand : ObdCommand() {
             if (rawValue.contains(":")) {
                 // CAN(ISO-15765) protocol.
                 // 9 is xxx490201, xxx is bytes of information to follow.
-                val value = rawValue.replace(".:", "").substring(9)
+                val value = rawValue.replace(".:".toRegex(), "").substring(9)
                 if (STARTS_WITH_ALPHANUM_PATTERN.matcher(convertHexToString(value)).find()) {
-                    rawValue.replace("0:49", "").replace(".:", "")
+                    rawValue.replace("0:49", "").replace(".:".toRegex(), "")
                 } else {
                     value
                 }
             } else {
                 // ISO9141-2, KWP2000 Fast and KWP2000 5Kbps (ISO15031) protocols.
-                rawValue.replace("49020.", "")
+                rawValue.replace("49020.".toRegex(), "")
             }
-        return convertHexToString(workingData).replace("[\u0000-\u001f]", "")
+        return convertHexToString(workingData).replace("[\u0000-\u001f]".toRegex(), "")
     }
 
     private fun convertHexToString(hex: String): String =
-        hex.chunked(2).map { Integer.parseInt(it, 16).toChar() }.joinToString("")
+        hex.chunked(2) { Integer.parseInt(it.toString(), 16).toChar() }.joinToString("")
 
     companion object {
         private val STARTS_WITH_ALPHANUM_PATTERN = Pattern.compile("[^a-z0-9 ]", Pattern.CASE_INSENSITIVE)
