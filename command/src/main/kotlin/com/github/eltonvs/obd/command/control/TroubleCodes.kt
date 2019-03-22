@@ -50,8 +50,10 @@ abstract class BaseTroubleCodesCommand : ObdCommand() {
 
     override val handler = { x: String -> parseTroubleCodesList(x).joinToString(separator = ",") }
 
+    abstract val carriageNumberPattern: Pattern
+
     private fun parseTroubleCodesList(rawValue: String): List<String> {
-        val canOneFrame: String = removeCarriage(rawValue)
+        val canOneFrame: String = removeAll(CARRIAGE_PATTERN, rawValue)
         val canOneFrameLength: Int = canOneFrame.length
 
         val workingData: String
@@ -64,40 +66,29 @@ abstract class BaseTroubleCodesCommand : ObdCommand() {
             }
             rawValue.contains(":") -> {
                 // CAN(ISO-15765) protocol two and more frames.
-                workingData = removeCarriageColon(rawValue)  // xxx43yy[codes]
+                workingData = removeAll(CARRIAGE_COLON_PATTERN, rawValue)  // xxx43yy[codes]
                 startIndex = 7  // Header is xxx43yy, xxx is bytes of information to follow, yy showing the
             }
             else -> {
                 // ISO9141-2, KWP2000 Fast and KWP2000 5Kbps (ISO15031) protocols.
-                workingData = removeCarriageNumber(rawValue)
+                workingData = removeAll(carriageNumberPattern, rawValue)
                 startIndex = 0
             }
         }
 
-        val troubleCodesList = mutableListOf<String>()
-        for (begin in startIndex until workingData.length - 3 step 4) {
-            val b1 = hexStringToByteArray(workingData[begin]).toInt()
+        val troubleCodesList = workingData.substring(startIndex).chunked(5) {
+            val b1 = hexStringToByteArray(it.first()).toInt()
             val ch1 = ((b1 and 0xC0) shr 6)
             val ch2 = ((b1 and 0x30) shr 4)
-            val dtc = "${DTC_LETTERS[ch1]}${HEX_ARRAY[ch2]}${workingData.substring(begin + 1, begin + 4)}"
-            if (dtc == "P0000") {
-                break
-            }
-            troubleCodesList.add(dtc)
+            "${DTC_LETTERS[ch1]}${HEX_ARRAY[ch2]}${it.drop(1)}"
         }
 
-        return troubleCodesList
+        return if (troubleCodesList.contains("P0000")) listOf() else troubleCodesList
     }
 
-    private fun removeCarriage(str: String) = CARRIAGE_PATTERN.matcher(str).replaceAll("")
+    private fun removeAll(pattern: Pattern, str: String) = pattern.matcher(str).replaceAll("")
 
-    private fun removeCarriageColon(str: String) = CARRIAGE_COLON_PATTERN.matcher(str).replaceAll("")
-
-    protected abstract fun removeCarriageNumber(str: String): String
-
-    private fun hexStringToByteArray(s: Char): Byte {
-        return (Character.digit(s, 16) shl 4).toByte()
-    }
+    private fun hexStringToByteArray(s: Char): Byte = (Character.digit(s, 16) shl 4).toByte()
 
     protected companion object {
         val DTC_LETTERS = charArrayOf('P', 'C', 'B', 'U')
@@ -112,11 +103,7 @@ class TroubleCodesCommand : BaseTroubleCodesCommand() {
     override val name = "Trouble Codes"
     override val mode = "03"
 
-    override fun removeCarriageNumber(str: String): String = CARRIAGE_NUMBER_PATTERN.matcher(str).replaceAll("")
-
-    companion object {
-        private val CARRIAGE_NUMBER_PATTERN = Pattern.compile("^43|[\r\n]43|[\r\n]")
-    }
+    override val carriageNumberPattern: Pattern = Pattern.compile("^43|[\r\n]43|[\r\n]")
 }
 
 class PendingTroubleCodesCommand : BaseTroubleCodesCommand() {
@@ -124,11 +111,7 @@ class PendingTroubleCodesCommand : BaseTroubleCodesCommand() {
     override val name = "Pending Trouble Codes"
     override val mode = "07"
 
-    override fun removeCarriageNumber(str: String): String = CARRIAGE_NUMBER_PATTERN.matcher(str).replaceAll("")
-
-    companion object {
-        private val CARRIAGE_NUMBER_PATTERN = Pattern.compile("^47|[\r\n]47|[\r\n]")
-    }
+    override val carriageNumberPattern: Pattern = Pattern.compile("^47|[\r\n]47|[\r\n]")
 }
 
 class PermanentTroubleCodesCommand : BaseTroubleCodesCommand() {
@@ -136,9 +119,5 @@ class PermanentTroubleCodesCommand : BaseTroubleCodesCommand() {
     override val name = "Permanent Trouble Codes"
     override val mode = "0A"
 
-    override fun removeCarriageNumber(str: String): String = CARRIAGE_NUMBER_PATTERN.matcher(str).replaceAll("")
-
-    companion object {
-        private val CARRIAGE_NUMBER_PATTERN = Pattern.compile("^4A|[\r\n]4A|[\r\n]")
-    }
+    override val carriageNumberPattern: Pattern = Pattern.compile("^4A|[\r\n]4A|[\r\n]")
 }
