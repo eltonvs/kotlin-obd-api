@@ -85,3 +85,23 @@ class AbsoluteLoadCommand : ObdCommand() {
         return calculated * 100f / 255f
     }
 }
+
+class ThrottlePositionCommand : ObdCommand() {
+    override val tag = "THROTTLE_POSITION"
+    override val name = "Throttle Position"
+    override val mode = "01"
+    override val pid = "11"
+
+    override val defaultUnit = "%"
+    override val handler = { x: String -> "%.1f".format(calculatePercentage(x)) }
+}
+
+class RelativeThrottlePositionCommand : ObdCommand() {
+    override val tag = "RELATIVE_THROTTLE_POSITION"
+    override val name = "Relative Throttle Position"
+    override val mode = "01"
+    override val pid = "45"
+
+    override val defaultUnit = "%"
+    override val handler = { x: String -> "%.1f".format(calculatePercentage(x)) }
+}
