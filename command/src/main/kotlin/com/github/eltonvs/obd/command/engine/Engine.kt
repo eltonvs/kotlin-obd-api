@@ -9,6 +9,11 @@ private fun calculate(rawValue: String): Int {
     return a * 256 + b
 }
 
+private fun calculatePercentage(rawValue: String): Float {
+    val a = rawValue[2].toInt()
+    return (a * 100f) / 255f
+}
+
 class SpeedCommand : ObdCommand() {
     override val tag = "SPEED"
     override val name = "Vehicle Speed"
@@ -53,5 +58,30 @@ class RuntimeCommand : ObdCommand() {
         val mm = (seconds % 3600) / 60
         val ss = seconds % 60
         return "$hh:$mm:$ss"
+    }
+}
+
+class LoadCommand : ObdCommand() {
+    override val tag = "ENGINE_LOAD"
+    override val name = "Engine Load"
+    override val mode = "01"
+    override val pid = "04"
+
+    override val defaultUnit = "%"
+    override val handler = { x: String -> "%.1f".format(calculatePercentage(x)) }
+}
+
+class AbsoluteLoadCommand : ObdCommand() {
+    override val tag = "ENGINE_ABSOLUTE_LOAD"
+    override val name = "Engine Absolute Load"
+    override val mode = "01"
+    override val pid = "43"
+
+    override val defaultUnit = "%"
+    override val handler = { x: String -> "%.1f".format(parseAbsoluteLoad(x)) }
+
+    private fun parseAbsoluteLoad(rawValue: String): Float {
+        val calculated = calculate(rawValue)
+        return calculated * 100f / 255f
     }
 }
