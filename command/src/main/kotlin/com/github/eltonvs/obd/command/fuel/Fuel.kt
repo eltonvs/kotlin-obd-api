@@ -79,7 +79,7 @@ class EthanolLevelCommand : ObdCommand() {
     override val handler = { x: String -> "%.1f".format(calculatePercentage(x)) }
 }
 
-class FuelTrimCommand(private val fuelTrimBank: FuelTrimBank) : ObdCommand() {
+class FuelTrimCommand(fuelTrimBank: FuelTrimBank) : ObdCommand() {
     override val tag = fuelTrimBank.name
     override val name = fuelTrimBank.displayName
     override val mode = "01"
