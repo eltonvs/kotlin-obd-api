@@ -10,13 +10,13 @@ abstract class ObdCommand {
     abstract val pid: String
 
     open val defaultUnit: String = ""
-    open val handler: (String) -> String = { x: String -> x }
+    open val handler: (ObdRawResponse) -> String = { it.value }
 
     fun handleResponse(rawResponse: ObdRawResponse): ObdResponse =
         ObdResponse(
             command = this,
             rawResponse = rawResponse,
-            value = handler(rawResponse.value),
+            value = handler(rawResponse),
             unit = defaultUnit
         )
 

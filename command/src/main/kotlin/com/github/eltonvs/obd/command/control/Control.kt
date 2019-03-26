@@ -1,14 +1,10 @@
 package com.github.eltonvs.obd.command.control
 
 import com.github.eltonvs.obd.command.ObdCommand
+import com.github.eltonvs.obd.command.bytesToInt
+import com.github.eltonvs.obd.domain.ObdRawResponse
 import java.util.regex.Pattern
 
-
-private fun calculate(rawValue: String): Int {
-    val a = rawValue[2].toInt()
-    val b = rawValue[3].toInt()
-    return a * 256 + b
-}
 
 class ModuleVoltageCommand : ObdCommand() {
     override val tag = "CONTROL_MODULE_VOLTAGE"
@@ -17,7 +13,7 @@ class ModuleVoltageCommand : ObdCommand() {
     override val pid = "42"
 
     override val defaultUnit = "V"
-    override val handler = { x: String -> "%.2f".format(calculate(x) / 1000f) }
+    override val handler = { it: ObdRawResponse -> "%.2f".format(bytesToInt(it.bufferedValue) / 1000f) }
 }
 
 class TimingAdvanceCommand : ObdCommand() {
@@ -27,7 +23,7 @@ class TimingAdvanceCommand : ObdCommand() {
     override val pid = "0E"
 
     override val defaultUnit = "°"
-    override val handler = { x: String -> "%.2f".format(x[2].toInt() / 2f - 64) }
+    override val handler = { it: ObdRawResponse -> "%.2f".format(bytesToInt(it.bufferedValue) / 2f - 64) }
 }
 
 class VINCommand : ObdCommand() {
@@ -37,7 +33,7 @@ class VINCommand : ObdCommand() {
     override val pid = "02"
 
     override val defaultUnit = ""
-    override val handler = ::parseVIN
+    override val handler = { it: ObdRawResponse -> parseVIN(it.value) }
 
     private fun parseVIN(rawValue: String): String {
         val workingData =

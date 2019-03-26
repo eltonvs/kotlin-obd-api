@@ -1,14 +1,10 @@
 package com.github.eltonvs.obd.command.control
 
 import com.github.eltonvs.obd.command.ObdCommand
+import com.github.eltonvs.obd.command.bytesToInt
+import com.github.eltonvs.obd.domain.ObdRawResponse
 import java.util.regex.Pattern
 
-
-private fun calculate(rawValue: String): Int {
-    val a = rawValue[2].toInt()
-    val b = rawValue[3].toInt()
-    return a * 256 + b
-}
 
 class DTCNumberCommand : ObdCommand() {
     override val tag = "DTC_NUMBER"
@@ -17,8 +13,8 @@ class DTCNumberCommand : ObdCommand() {
     override val pid = "01"
 
     override val defaultUnit = " codes"
-    override val handler = { rawValue: String ->
-        val mil = rawValue[2].toInt()
+    override val handler = { it: ObdRawResponse ->
+        val mil = it.bufferedValue[2]
         val codeCount = mil and 0x7F
         codeCount.toString()
     }
@@ -31,7 +27,7 @@ class DistanceSinceCodesClearedCommand : ObdCommand() {
     override val pid = "31"
 
     override val defaultUnit = "Km"
-    override val handler = { x: String -> calculate(x).toString() }
+    override val handler = { it: ObdRawResponse -> bytesToInt(it.bufferedValue).toString() }
 }
 
 class TimeSinceCodesClearedCommand : ObdCommand() {
@@ -41,14 +37,14 @@ class TimeSinceCodesClearedCommand : ObdCommand() {
     override val pid = "4E"
 
     override val defaultUnit = "min"
-    override val handler = { x: String -> calculate(x).toString() }
+    override val handler = { it: ObdRawResponse -> bytesToInt(it.bufferedValue).toString() }
 }
 
 
 abstract class BaseTroubleCodesCommand : ObdCommand() {
     override val pid = ""
 
-    override val handler = { x: String -> parseTroubleCodesList(x).joinToString(separator = ",") }
+    override val handler = { it: ObdRawResponse -> parseTroubleCodesList(it.value).joinToString(separator = ",") }
 
     abstract val carriageNumberPattern: Pattern
 

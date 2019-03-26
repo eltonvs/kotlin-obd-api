@@ -1,18 +1,10 @@
 package com.github.eltonvs.obd.command.engine
 
 import com.github.eltonvs.obd.command.ObdCommand
+import com.github.eltonvs.obd.command.bytesToInt
+import com.github.eltonvs.obd.command.calculatePercentage
+import com.github.eltonvs.obd.domain.ObdRawResponse
 
-
-private fun calculate(rawValue: String): Int {
-    val a = rawValue[2].toInt()
-    val b = rawValue[3].toInt()
-    return a * 256 + b
-}
-
-private fun calculatePercentage(rawValue: String): Float {
-    val a = rawValue[2].toInt()
-    return (a * 100f) / 255f
-}
 
 class SpeedCommand : ObdCommand() {
     override val tag = "SPEED"
@@ -21,7 +13,7 @@ class SpeedCommand : ObdCommand() {
     override val pid = "0D"
 
     override val defaultUnit = "Km/h"
-    override val handler = { x: String -> x[2].toInt().toString() }
+    override val handler = { it: ObdRawResponse -> bytesToInt(it.bufferedValue).toString() }
 }
 
 class RPMCommand : ObdCommand() {
@@ -31,7 +23,7 @@ class RPMCommand : ObdCommand() {
     override val pid = "0C"
 
     override val defaultUnit = "RPM"
-    override val handler = { x: String -> (calculate(x) / 4).toString() }
+    override val handler = { it: ObdRawResponse -> (bytesToInt(it.bufferedValue) / 4).toString() }
 }
 
 class MassAirFlowCommand : ObdCommand() {
@@ -41,7 +33,7 @@ class MassAirFlowCommand : ObdCommand() {
     override val pid = "10"
 
     override val defaultUnit = "g/s"
-    override val handler = { x: String -> "%.2f".format(calculate(x) / 100f) }
+    override val handler = { it: ObdRawResponse -> "%.2f".format(bytesToInt(it.bufferedValue) / 100f) }
 }
 
 class RuntimeCommand : ObdCommand() {
@@ -50,10 +42,10 @@ class RuntimeCommand : ObdCommand() {
     override val mode = "01"
     override val pid = "0F"
 
-    override val handler = ::parseRuntime
+    override val handler = { it: ObdRawResponse -> parseRuntime(it.bufferedValue) }
 
-    private fun parseRuntime(rawValue: String): String {
-        val seconds = calculate(rawValue)
+    private fun parseRuntime(rawValue: IntArray): String {
+        val seconds = bytesToInt(rawValue)
         val hh = seconds / 3600
         val mm = (seconds % 3600) / 60
         val ss = seconds % 60
@@ -68,7 +60,7 @@ class LoadCommand : ObdCommand() {
     override val pid = "04"
 
     override val defaultUnit = "%"
-    override val handler = { x: String -> "%.1f".format(calculatePercentage(x)) }
+    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue)) }
 }
 
 class AbsoluteLoadCommand : ObdCommand() {
@@ -78,12 +70,7 @@ class AbsoluteLoadCommand : ObdCommand() {
     override val pid = "43"
 
     override val defaultUnit = "%"
-    override val handler = { x: String -> "%.1f".format(parseAbsoluteLoad(x)) }
-
-    private fun parseAbsoluteLoad(rawValue: String): Float {
-        val calculated = calculate(rawValue)
-        return calculated * 100f / 255f
-    }
+    override val handler = { it: ObdRawResponse -> "%.1f".format(bytesToInt(it.bufferedValue) * 100 / 255f) }
 }
 
 class ThrottlePositionCommand : ObdCommand() {
@@ -93,7 +80,7 @@ class ThrottlePositionCommand : ObdCommand() {
     override val pid = "11"
 
     override val defaultUnit = "%"
-    override val handler = { x: String -> "%.1f".format(calculatePercentage(x)) }
+    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue)) }
 }
 
 class RelativeThrottlePositionCommand : ObdCommand() {
@@ -103,5 +90,5 @@ class RelativeThrottlePositionCommand : ObdCommand() {
     override val pid = "45"
 
     override val defaultUnit = "%"
-    override val handler = { x: String -> "%.1f".format(calculatePercentage(x)) }
+    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue)) }
 }
