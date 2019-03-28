@@ -93,8 +93,8 @@ abstract class BaseTroubleCodesCommand : ObdCommand() {
     private fun hexStringToByteArray(s: Char): Byte = (Character.digit(s, 16) shl 4).toByte()
 
     protected companion object {
-        val DTC_LETTERS = charArrayOf('P', 'C', 'B', 'U')
-        val HEX_ARRAY = "0123456789ABCDEF".toCharArray()
+        private val DTC_LETTERS = charArrayOf('P', 'C', 'B', 'U')
+        private val HEX_ARRAY = "0123456789ABCDEF".toCharArray()
         private val CARRIAGE_PATTERN = Pattern.compile("[\r\n]")
         private val CARRIAGE_COLON_PATTERN = Pattern.compile("[\r\n].:")
     }
