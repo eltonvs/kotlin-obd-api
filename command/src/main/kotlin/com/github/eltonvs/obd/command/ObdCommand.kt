@@ -1,7 +1,5 @@
 package com.github.eltonvs.obd.command
 
-import com.github.eltonvs.obd.domain.ObdRawResponse
-import com.github.eltonvs.obd.domain.ObdResponse
 
 abstract class ObdCommand {
     abstract val tag: String

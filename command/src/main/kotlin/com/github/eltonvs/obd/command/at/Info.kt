@@ -2,7 +2,7 @@ package com.github.eltonvs.obd.command.at
 
 import com.github.eltonvs.obd.command.ATCommand
 import com.github.eltonvs.obd.command.ObdProtocols
-import com.github.eltonvs.obd.domain.ObdRawResponse
+import com.github.eltonvs.obd.command.ObdRawResponse
 
 
 class DescribeProtocolCommand : ATCommand() {

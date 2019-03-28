@@ -1,8 +1,8 @@
 package com.github.eltonvs.obd.command.pressure
 
 import com.github.eltonvs.obd.command.ObdCommand
+import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.bytesToInt
-import com.github.eltonvs.obd.domain.ObdRawResponse
 
 
 class BarometricPressureCommand : ObdCommand() {

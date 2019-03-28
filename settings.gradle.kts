@@ -1,2 +1,2 @@
 rootProject.name = "kotlin-obd-api"
-include("command", "connection", "domain")
+include("command", "connection")

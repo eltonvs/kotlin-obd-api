@@ -1,9 +1,9 @@
 package com.github.eltonvs.obd.command.control
 
 import com.github.eltonvs.obd.command.ObdCommand
+import com.github.eltonvs.obd.command.ObdRawResponse
+import com.github.eltonvs.obd.command.ObdResponse
 import com.github.eltonvs.obd.command.bytesToInt
-import com.github.eltonvs.obd.domain.ObdRawResponse
-import com.github.eltonvs.obd.domain.ObdResponse
 
 
 class MILOnCommand : ObdCommand() {

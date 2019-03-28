@@ -1,8 +1,8 @@
 package com.github.eltonvs.obd.command.fuel
 
 import com.github.eltonvs.obd.command.ObdCommand
+import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.bytesToInt
-import com.github.eltonvs.obd.domain.ObdRawResponse
 
 
 private fun calculateFuelAirRatio(rawValue: IntArray): Float = bytesToInt(rawValue) * (2 / 65_536f)

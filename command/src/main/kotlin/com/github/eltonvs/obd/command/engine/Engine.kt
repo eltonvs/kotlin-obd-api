@@ -1,9 +1,9 @@
 package com.github.eltonvs.obd.command.engine
 
 import com.github.eltonvs.obd.command.ObdCommand
+import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.bytesToInt
 import com.github.eltonvs.obd.command.calculatePercentage
-import com.github.eltonvs.obd.domain.ObdRawResponse
 
 
 class SpeedCommand : ObdCommand() {

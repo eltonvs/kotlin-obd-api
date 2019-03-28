@@ -14,7 +14,6 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(project(":command"))
-    implementation(project(":domain"))
 }
 
 tasks.withType<KotlinCompile> {
