@@ -40,6 +40,12 @@ class TimeSinceCodesClearedCommand : ObdCommand() {
     override val handler = { it: ObdRawResponse -> bytesToInt(it.bufferedValue).toString() }
 }
 
+class ResetTroubleCodesCommand : ObdCommand() {
+    override val tag = "RESET_TROUBLE_CODES"
+    override val name = "Reset Trouble Codes"
+    override val mode = "04"
+    override val pid = ""
+}
 
 abstract class BaseTroubleCodesCommand : ObdCommand() {
     override val pid = ""
