@@ -8,6 +8,28 @@ import kotlin.test.assertEquals
 
 
 @RunWith(Parameterized::class)
+class TimingAdvanceCommandParameterizedTests(private val rawValue: String, private val expected: Float) {
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters
+        fun vinValues() = listOf(
+            arrayOf("410E70", -8f),
+            arrayOf("410E00", -64f),
+            arrayOf("410EFF", 63.5f)
+        )
+    }
+
+    @Test
+    fun `test valid timing advance responses handler`() {
+        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+        val timingAdvanceCommand = TimingAdvanceCommand()
+        val obdResponse = timingAdvanceCommand.handleResponse(rawResponse)
+        assertEquals("%.2f°".format(expected), obdResponse.formattedValue)
+    }
+}
+
+
+@RunWith(Parameterized::class)
 class VINCommandParameterizedTests(private val rawValue: String, private val expected: String) {
     companion object {
         @JvmStatic
