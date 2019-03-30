@@ -8,6 +8,28 @@ import kotlin.test.assertEquals
 
 
 @RunWith(Parameterized::class)
+class ModuleVoltageCommandParameterizedTests(private val rawValue: String, private val expected: Float) {
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters
+        fun vinValues() = listOf(
+            arrayOf("414204E2", 1.25f),
+            arrayOf("41420000", 0f),
+            arrayOf("4142FFFF", 65.535f)
+        )
+    }
+
+    @Test
+    fun `test valid module voltage responses handler`() {
+        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+        val moduleVoltageCommand = ModuleVoltageCommand()
+        val obdResponse = moduleVoltageCommand.handleResponse(rawResponse)
+        assertEquals("%.2fV".format(expected), obdResponse.formattedValue)
+    }
+}
+
+
+@RunWith(Parameterized::class)
 class TimingAdvanceCommandParameterizedTests(private val rawValue: String, private val expected: Float) {
     companion object {
         @JvmStatic
