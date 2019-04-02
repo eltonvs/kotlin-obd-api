@@ -49,7 +49,7 @@ class RuntimeCommand : ObdCommand() {
         val hh = seconds / 3600
         val mm = (seconds % 3600) / 60
         val ss = seconds % 60
-        return "$hh:$mm:$ss"
+        return listOf(hh, mm, ss).joinToString(":") { it.toString().padStart(2, '0') }
     }
 }
 
@@ -70,7 +70,7 @@ class AbsoluteLoadCommand : ObdCommand() {
     override val pid = "43"
 
     override val defaultUnit = "%"
-    override val handler = { it: ObdRawResponse -> "%.1f".format(bytesToInt(it.bufferedValue) * 100 / 255f) }
+    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue)) }
 }
 
 class ThrottlePositionCommand : ObdCommand() {
