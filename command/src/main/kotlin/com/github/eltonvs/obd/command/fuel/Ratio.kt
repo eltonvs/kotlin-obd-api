@@ -26,7 +26,7 @@ class FuelAirEquivalenceRatioCommand(oxygenSensor: OxygenSensor) : ObdCommand() 
     override val defaultUnit = "F/A"
     override val handler = { it: ObdRawResponse -> "%.2f".format(calculateFuelAirRatio(it.bufferedValue)) }
 
-    enum class OxygenSensor(val displayName: String, val pid: String) {
+    enum class OxygenSensor(val displayName: String, internal val pid: String) {
         OXYGEN_SENSOR_1("Oxygen Sensor 1", "34"),
         OXYGEN_SENSOR_2("Oxygen Sensor 2", "35"),
         OXYGEN_SENSOR_3("Oxygen Sensor 3", "36"),

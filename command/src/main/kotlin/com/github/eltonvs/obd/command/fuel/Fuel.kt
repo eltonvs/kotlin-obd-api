@@ -25,6 +25,7 @@ class FuelTypeCommand : ObdCommand() {
     override val handler = { it: ObdRawResponse -> getFuelType(bytesToInt(it.bufferedValue).toInt()) }
 
     private fun getFuelType(code: Int): String = when (code) {
+        0x00 -> "Not Available"
         0x01 -> "Gasoline"
         0x02 -> "Methanol"
         0x03 -> "Ethanol"
@@ -80,7 +81,7 @@ class FuelTrimCommand(fuelTrimBank: FuelTrimBank) : ObdCommand() {
     override val defaultUnit = "%"
     override val handler = { it: ObdRawResponse -> "%.1f".format(bytesToInt(it.bufferedValue) * (100f / 128) - 100) }
 
-    enum class FuelTrimBank(val displayName: String, val pid: String) {
+    enum class FuelTrimBank(val displayName: String, internal val pid: String) {
         SHORT_TERM_BANK_1("Short Term Fuel Trim Bank 1", "06"),
         SHORT_TERM_BANK_2("Short Term Fuel Trim Bank 2", "07"),
         LONG_TERM_BANK_1("Long Term Fuel Trim Bank 1", "08"),
