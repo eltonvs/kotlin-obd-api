@@ -58,39 +58,41 @@ abstract class BaseTroubleCodesCommand : ObdCommand() {
         val canOneFrame: String = removeAll(CARRIAGE_PATTERN, rawValue)
         val canOneFrameLength: Int = canOneFrame.length
 
-        val workingData: String
-        val startIndex: Int
-        when {
-            (canOneFrameLength <= 16) and (canOneFrameLength % 4 == 0) -> {
-                // CAN(ISO-15765) protocol one frame.
-                workingData = canOneFrame  // 43yy[codes]
-                startIndex = 4  // Header is 43yy, yy showing the number of data items.
+        val workingData =
+            when {
+                rawValue.contains("NODATA") -> {
+                    println("heyyy")
+                    ""
+                }
+                (canOneFrameLength <= 16) and (canOneFrameLength % 4 == 0) -> {
+                    // CAN(ISO-15765) protocol one frame.
+                    canOneFrame.drop(4)  // 43yy[codes] - Header is 43yy, yy showing the number of data items.
+                }
+                rawValue.contains(":") -> {
+                    // CAN(ISO-15765) protocol two and more frames.
+                    removeAll(
+                        CARRIAGE_COLON_PATTERN,
+                        rawValue
+                    ).drop(7)  // xxx43yy[codes] - Header is xxx43yy, xxx is bytes of information to follow, yy showing the
+                }
+                else -> {
+                    // ISO9141-2, KWP2000 Fast and KWP2000 5Kbps (ISO15031) protocols.
+                    removeAll(carriageNumberPattern, rawValue)
+                }
             }
-            rawValue.contains(":") -> {
-                // CAN(ISO-15765) protocol two and more frames.
-                workingData = removeAll(CARRIAGE_COLON_PATTERN, rawValue)  // xxx43yy[codes]
-                startIndex = 7  // Header is xxx43yy, xxx is bytes of information to follow, yy showing the
-            }
-            else -> {
-                // ISO9141-2, KWP2000 Fast and KWP2000 5Kbps (ISO15031) protocols.
-                workingData = removeAll(carriageNumberPattern, rawValue)
-                startIndex = 0
-            }
-        }
 
-        val troubleCodesList = workingData.substring(startIndex).chunked(5) {
-            val b1 = hexStringToByteArray(it.first()).toInt()
-            val ch1 = ((b1 and 0xC0) shr 6)
-            val ch2 = ((b1 and 0x30) shr 4)
+        val troubleCodesList = workingData.chunked(4) {
+            val b1 = it.take(2).toString().toInt(radix = 16)
+            val ch1 = (b1 shr 6) and 0b11
+            val ch2 = (b1 shr 4) and 0b11
             "${DTC_LETTERS[ch1]}${HEX_ARRAY[ch2]}${it.drop(1)}"
         }
 
-        return if (troubleCodesList.contains("P0000")) listOf() else troubleCodesList
+        val idx = troubleCodesList.indexOf("P0000")
+        return if (idx < 0) troubleCodesList else troubleCodesList.take(idx)
     }
 
     private fun removeAll(pattern: Pattern, str: String) = pattern.matcher(str).replaceAll("")
-
-    private fun hexStringToByteArray(s: Char): Byte = (Character.digit(s, 16) shl 4).toByte()
 
     protected companion object {
         private val DTC_LETTERS = charArrayOf('P', 'C', 'B', 'U')
