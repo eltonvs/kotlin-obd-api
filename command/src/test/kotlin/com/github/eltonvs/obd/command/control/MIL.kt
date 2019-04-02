@@ -26,8 +26,9 @@ class MILOnCommandParameterizedTests(private val rawValue: String, private val e
     @Test
     fun `test valid MIL on responses handler`() {
         val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val milOnCommand = MILOnCommand()
-        val obdResponse = milOnCommand.handleResponse(rawResponse)
+        val obdResponse = MILOnCommand().run {
+            handleResponse(rawResponse)
+        }
         assertEquals("MIL is ${if (expected) "ON" else "OFF"}", obdResponse.formattedValue)
     }
 }
@@ -48,8 +49,9 @@ class DistanceMILOnCommandParameterizedTests(private val rawValue: String, priva
     @Test
     fun `test valid distance MIL on responses handler`() {
         val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val distanceMILOnCommand = DistanceMILOnCommand()
-        val obdResponse = distanceMILOnCommand.handleResponse(rawResponse)
+        val obdResponse = DistanceMILOnCommand().run {
+            handleResponse(rawResponse)
+        }
         assertEquals("${expected}Km", obdResponse.formattedValue)
     }
 }
@@ -70,8 +72,9 @@ class TimeSinceMILOnCommandParameterizedTests(private val rawValue: String, priv
     @Test
     fun `test valid time since MIL on responses handler`() {
         val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val timeSinceMILOnCommand = TimeSinceMILOnCommand()
-        val obdResponse = timeSinceMILOnCommand.handleResponse(rawResponse)
+        val obdResponse = TimeSinceMILOnCommand().run {
+            handleResponse(rawResponse)
+        }
         assertEquals("${expected}min", obdResponse.formattedValue)
     }
 }

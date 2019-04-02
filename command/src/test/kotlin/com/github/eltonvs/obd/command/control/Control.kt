@@ -22,8 +22,9 @@ class ModuleVoltageCommandParameterizedTests(private val rawValue: String, priva
     @Test
     fun `test valid module voltage responses handler`() {
         val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val moduleVoltageCommand = ModuleVoltageCommand()
-        val obdResponse = moduleVoltageCommand.handleResponse(rawResponse)
+        val obdResponse = ModuleVoltageCommand().run {
+            handleResponse(rawResponse)
+        }
         assertEquals("%.2fV".format(expected), obdResponse.formattedValue)
     }
 }
@@ -44,8 +45,9 @@ class TimingAdvanceCommandParameterizedTests(private val rawValue: String, priva
     @Test
     fun `test valid timing advance responses handler`() {
         val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val timingAdvanceCommand = TimingAdvanceCommand()
-        val obdResponse = timingAdvanceCommand.handleResponse(rawResponse)
+        val obdResponse = TimingAdvanceCommand().run {
+            handleResponse(rawResponse)
+        }
         assertEquals("%.2f°".format(expected), obdResponse.formattedValue)
     }
 }
@@ -69,8 +71,9 @@ class VINCommandParameterizedTests(private val rawValue: String, private val exp
     @Test
     fun `test valid vin responses handler`() {
         val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val vinCommand = VINCommand()
-        val obdResponse = vinCommand.handleResponse(rawResponse)
+        val obdResponse = VINCommand().run {
+            handleResponse(rawResponse)
+        }
         assertEquals(expected, obdResponse.formattedValue)
     }
 }

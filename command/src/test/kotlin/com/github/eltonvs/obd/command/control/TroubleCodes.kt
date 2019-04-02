@@ -28,8 +28,9 @@ class DTCNumberCommandParameterizedTests(private val rawValue: String, private v
     @Test
     fun `test valid DTC number responses handler`() {
         val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val dtcNumberCommand = DTCNumberCommand()
-        val obdResponse = dtcNumberCommand.handleResponse(rawResponse)
+        val obdResponse = DTCNumberCommand().run {
+            handleResponse(rawResponse)
+        }
         assertEquals("$expected codes", obdResponse.formattedValue)
     }
 }
@@ -50,8 +51,9 @@ class DistanceSinceCodesClearedCommandParameterizedTests(private val rawValue: S
     @Test
     fun `test valid distance since codes cleared responses handler`() {
         val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val distanceSinceCodesClearedCommand = DistanceSinceCodesClearedCommand()
-        val obdResponse = distanceSinceCodesClearedCommand.handleResponse(rawResponse)
+        val obdResponse = DistanceSinceCodesClearedCommand().run {
+            handleResponse(rawResponse)
+        }
         assertEquals("${expected}Km", obdResponse.formattedValue)
     }
 }
@@ -72,8 +74,9 @@ class TimeSinceCodesClearedCommandParameterizedTests(private val rawValue: Strin
     @Test
     fun `test valid time since codes cleared responses handler`() {
         val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val timeSinceCodesClearedCommand = TimeSinceCodesClearedCommand()
-        val obdResponse = timeSinceCodesClearedCommand.handleResponse(rawResponse)
+        val obdResponse = TimeSinceCodesClearedCommand().run {
+            handleResponse(rawResponse)
+        }
         assertEquals("${expected}min", obdResponse.formattedValue)
     }
 }
@@ -105,8 +108,9 @@ class TroubleCodesCommandsParameterizedTests(private val rawValue: String, priva
     @Test
     fun `test valid trouble codes responses handler`() {
         val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val troubleCodesCommand = TroubleCodesCommand()
-        val obdResponse = troubleCodesCommand.handleResponse(rawResponse)
+        val obdResponse = TroubleCodesCommand().run {
+            handleResponse(rawResponse)
+        }
         assertEquals(expected.joinToString(separator = ","), obdResponse.formattedValue)
     }
 }
@@ -137,8 +141,9 @@ class PendingTroubleCodesCommandsParameterizedTests(private val rawValue: String
     @Test
     fun `test valid pending trouble codes responses handler`() {
         val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val pendingTroubleCodesCommand = PendingTroubleCodesCommand()
-        val obdResponse = pendingTroubleCodesCommand.handleResponse(rawResponse)
+        val obdResponse = PendingTroubleCodesCommand().run {
+            handleResponse(rawResponse)
+        }
         assertEquals(expected.joinToString(separator = ","), obdResponse.formattedValue)
     }
 }
@@ -172,8 +177,9 @@ class PermanentTroubleCodesCommandsParameterizedTests(
     @Test
     fun `test valid permanent trouble codes responses handler`() {
         val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val permanentTroubleCodesCommand = PermanentTroubleCodesCommand()
-        val obdResponse = permanentTroubleCodesCommand.handleResponse(rawResponse)
+        val obdResponse = PermanentTroubleCodesCommand().run {
+            handleResponse(rawResponse)
+        }
         assertEquals(expected.joinToString(separator = ","), obdResponse.formattedValue)
     }
 }
