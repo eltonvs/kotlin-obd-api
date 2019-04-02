@@ -60,32 +60,29 @@ abstract class BaseTroubleCodesCommand : ObdCommand() {
 
         val workingData =
             when {
-                rawValue.contains("NODATA") -> {
-                    println("heyyy")
-                    ""
-                }
-                (canOneFrameLength <= 16) and (canOneFrameLength % 4 == 0) -> {
-                    // CAN(ISO-15765) protocol one frame.
-                    canOneFrame.drop(4)  // 43yy[codes] - Header is 43yy, yy showing the number of data items.
-                }
-                rawValue.contains(":") -> {
-                    // CAN(ISO-15765) protocol two and more frames.
-                    removeAll(
-                        CARRIAGE_COLON_PATTERN,
-                        rawValue
-                    ).drop(7)  // xxx43yy[codes] - Header is xxx43yy, xxx is bytes of information to follow, yy showing the
-                }
-                else -> {
-                    // ISO9141-2, KWP2000 Fast and KWP2000 5Kbps (ISO15031) protocols.
-                    removeAll(carriageNumberPattern, rawValue)
-                }
+                rawValue.contains("NODATA") -> ""
+                /* CAN(ISO-15765) protocol one frame: 43yy[codes]
+                   Header is 43yy, yy showing the number of data items. */
+                (canOneFrameLength <= 16) and (canOneFrameLength % 4 == 0) -> canOneFrame.drop(4)
+                /* CAN(ISO-15765) protocol two and more frames: xxx43yy[codes]
+                   Header is xxx43yy, xxx is bytes of information to follow, yy showing the number of data items. */
+                rawValue.contains(":") -> removeAll(CARRIAGE_COLON_PATTERN, rawValue).drop(7)
+                // ISO9141-2, KWP2000 Fast and KWP2000 5Kbps (ISO15031) protocols.
+                else -> removeAll(carriageNumberPattern, rawValue)
             }
 
+        /* For each chunk of 4 chars:
+           it:  "0100"
+           HEX: 0   1    0   0
+           BIN: 00000001 00000000
+                [][][    hex    ]
+                | / /
+           DTC: P0100 */
         val troubleCodesList = workingData.chunked(4) {
-            val b1 = it.take(2).toString().toInt(radix = 16)
-            val ch1 = (b1 shr 6) and 0b11
-            val ch2 = (b1 shr 4) and 0b11
-            "${DTC_LETTERS[ch1]}${HEX_ARRAY[ch2]}${it.drop(1)}"
+            val b1 = it.first().toString().toInt(radix = 16)
+            val ch1 = (b1 shr 2) and 0b11
+            val ch2 = b1 and 0b11
+            "${DTC_LETTERS[ch1]}${HEX_ARRAY[ch2]}${it.drop(1)}".padEnd(5, '0')
         }
 
         val idx = troubleCodesList.indexOf("P0000")
