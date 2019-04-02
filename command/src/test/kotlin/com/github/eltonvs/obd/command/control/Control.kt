@@ -12,7 +12,7 @@ class ModuleVoltageCommandParameterizedTests(private val rawValue: String, priva
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             arrayOf("414204E2", 1.25f),
             arrayOf("41420000", 0f),
             arrayOf("4142FFFF", 65.535f)
@@ -35,7 +35,7 @@ class TimingAdvanceCommandParameterizedTests(private val rawValue: String, priva
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             arrayOf("410E70", -8f),
             arrayOf("410E00", -64f),
             arrayOf("410EFF", 63.5f)
@@ -58,7 +58,7 @@ class VINCommandParameterizedTests(private val rawValue: String, private val exp
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             // CAN (ISO-15765) format
             arrayOf("0140:4902013933591:425352375248452:4A323938313136", "93YBSR7RHEJ298116"),
             arrayOf("0140:4902015750301:5A5A5A39395A542:53333932313234", "WP0ZZZ99ZTS392124"),

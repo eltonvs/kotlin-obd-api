@@ -12,7 +12,7 @@ class SpeedCommandParameterizedTests(private val rawValue: String, private val e
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             arrayOf("410D15", 21),
             arrayOf("410D40", 64),
             arrayOf("410D00", 0),
@@ -36,7 +36,7 @@ class RPMCommandParameterizedTests(private val rawValue: String, private val exp
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             arrayOf("410C200D", 2051),
             arrayOf("410C283C", 2575),
             arrayOf("410C0A00", 640),
@@ -61,7 +61,7 @@ class MassAirFlowCommandParameterizedTests(private val rawValue: String, private
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             arrayOf("41109511", 381.61f),
             arrayOf("41101234", 46.6f),
             arrayOf("41100000", 0f),
@@ -85,7 +85,7 @@ class RuntimeCommandParameterizedTests(private val rawValue: String, private val
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             arrayOf("411F4543", "04:55:31"),
             arrayOf("411F1234", "01:17:40"),
             arrayOf("411F0000", "00:00:00"),
@@ -109,7 +109,7 @@ class LoadCommandParameterizedTests(private val rawValue: String, private val ex
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             arrayOf("410410", 6.3f),
             arrayOf("410400", 0f),
             arrayOf("4104FF", 100f)
@@ -132,7 +132,7 @@ class AbsoluteLoadCommandParameterizedTests(private val rawValue: String, privat
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             arrayOf("41434143", 6551.8f),
             arrayOf("41431234", 1827.5f),
             arrayOf("41430000", 0f),
@@ -156,7 +156,7 @@ class ThrottlePositionCommandParameterizedTests(private val rawValue: String, pr
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             arrayOf("411111", 6.7f),
             arrayOf("411100", 0f),
             arrayOf("4111FF", 100f)
@@ -179,7 +179,7 @@ class RelativeThrottlePositionCommandParameterizedTests(private val rawValue: St
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             arrayOf("414545", 27.1f),
             arrayOf("414500", 0f),
             arrayOf("4145FF", 100f)

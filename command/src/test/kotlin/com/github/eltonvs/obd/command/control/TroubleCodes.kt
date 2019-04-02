@@ -12,7 +12,7 @@ class DTCNumberCommandParameterizedTests(private val rawValue: String, private v
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             arrayOf("410100452100", 0),
             arrayOf("410100000000", 0),
             arrayOf("41017F000000", 127),
@@ -41,7 +41,7 @@ class DistanceSinceCodesClearedCommandParameterizedTests(private val rawValue: S
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             arrayOf("4131F967", 63_847),
             arrayOf("41310000", 0),
             arrayOf("4131FFFF", 65_535)
@@ -64,7 +64,7 @@ class TimeSinceCodesClearedCommandParameterizedTests(private val rawValue: Strin
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             arrayOf("414E4543", 17_731),
             arrayOf("414E0000", 0),
             arrayOf("414EFFFF", 65_535)
@@ -87,7 +87,7 @@ class TroubleCodesCommandsParameterizedTests(private val rawValue: String, priva
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             // Two frames with four dtc
             arrayOf("4300035104A1AB\r43F10600000000", listOf("P0003", "C1104", "B21AB", "U3106")),
             // One frame with three dtc
@@ -120,7 +120,7 @@ class PendingTroubleCodesCommandsParameterizedTests(private val rawValue: String
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             // Two frames with four dtc
             arrayOf("4700035104A1AB\r47F10600000000", listOf("P0003", "C1104", "B21AB", "U3106")),
             // One frame with three dtc
@@ -156,7 +156,7 @@ class PermanentTroubleCodesCommandsParameterizedTests(
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             // Two frames with four dtc
             arrayOf("4A00035104A1AB\r4AF10600000000", listOf("P0003", "C1104", "B21AB", "U3106")),
             // One frame with three dtc

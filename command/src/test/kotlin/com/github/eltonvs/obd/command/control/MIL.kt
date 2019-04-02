@@ -12,7 +12,7 @@ class MILOnCommandParameterizedTests(private val rawValue: String, private val e
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             arrayOf("410100452100", false),
             arrayOf("410100000000", false),
             arrayOf("41017F000000", false),
@@ -39,7 +39,7 @@ class DistanceMILOnCommandParameterizedTests(private val rawValue: String, priva
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             arrayOf("41210000", 0),
             arrayOf("41215C8D", 23_693),
             arrayOf("4121FFFF", 65_535)
@@ -62,7 +62,7 @@ class TimeSinceMILOnCommandParameterizedTests(private val rawValue: String, priv
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun vinValues() = listOf(
+        fun values() = listOf(
             arrayOf("414D0000", 0),
             arrayOf("414D5C8D", 23_693),
             arrayOf("414DFFFF", 65_535)
