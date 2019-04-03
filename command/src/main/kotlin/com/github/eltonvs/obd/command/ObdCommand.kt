@@ -10,6 +10,9 @@ abstract class ObdCommand {
     open val defaultUnit: String = ""
     open val handler: (ObdRawResponse) -> String = { it.value }
 
+    val rawCommand: String
+        get() = listOf(mode, pid).joinToString(" ")
+
     fun handleResponse(rawResponse: ObdRawResponse): ObdResponse =
         ObdResponse(
             command = this,
