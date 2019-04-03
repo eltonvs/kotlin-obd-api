@@ -2,8 +2,8 @@ package com.github.eltonvs.obd.command.control
 
 import com.github.eltonvs.obd.command.ObdCommand
 import com.github.eltonvs.obd.command.ObdRawResponse
+import com.github.eltonvs.obd.command.RegexPatterns.STARTS_WITH_ALPHANUM_PATTERN
 import com.github.eltonvs.obd.command.bytesToInt
-import java.util.regex.Pattern
 
 
 class ModuleVoltageCommand : ObdCommand() {
@@ -55,8 +55,4 @@ class VINCommand : ObdCommand() {
 
     private fun convertHexToString(hex: String): String =
         hex.chunked(2) { Integer.parseInt(it.toString(), 16).toChar() }.joinToString("")
-
-    companion object {
-        private val STARTS_WITH_ALPHANUM_PATTERN = Pattern.compile("[^a-z0-9 ]", Pattern.CASE_INSENSITIVE)
-    }
 }

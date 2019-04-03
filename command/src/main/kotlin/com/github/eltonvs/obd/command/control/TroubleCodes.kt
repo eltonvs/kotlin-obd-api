@@ -2,7 +2,10 @@ package com.github.eltonvs.obd.command.control
 
 import com.github.eltonvs.obd.command.ObdCommand
 import com.github.eltonvs.obd.command.ObdRawResponse
+import com.github.eltonvs.obd.command.RegexPatterns.CARRIAGE_COLON_PATTERN
+import com.github.eltonvs.obd.command.RegexPatterns.CARRIAGE_PATTERN
 import com.github.eltonvs.obd.command.bytesToInt
+import com.github.eltonvs.obd.command.removeAll
 import java.util.regex.Pattern
 
 
@@ -89,13 +92,9 @@ abstract class BaseTroubleCodesCommand : ObdCommand() {
         return if (idx < 0) troubleCodesList else troubleCodesList.take(idx)
     }
 
-    private fun removeAll(pattern: Pattern, str: String) = pattern.matcher(str).replaceAll("")
-
     protected companion object {
         private val DTC_LETTERS = charArrayOf('P', 'C', 'B', 'U')
         private val HEX_ARRAY = "0123456789ABCDEF".toCharArray()
-        private val CARRIAGE_PATTERN = Pattern.compile("[\r\n]")
-        private val CARRIAGE_COLON_PATTERN = Pattern.compile("[\r\n].:")
     }
 }
 
