@@ -54,6 +54,6 @@ class ObdDeviceConnection(private val inputStream: InputStream, private val outp
             res.append(c)
         }
 
-        removeAll(SEARCHING_PATTERN, res.toString())
+        removeAll(SEARCHING_PATTERN, res.toString()).trim()
     }
 }
