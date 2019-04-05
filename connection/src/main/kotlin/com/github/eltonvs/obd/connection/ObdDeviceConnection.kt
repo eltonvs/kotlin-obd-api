@@ -14,8 +14,18 @@ import kotlin.system.measureTimeMillis
 
 
 class ObdDeviceConnection(private val inputStream: InputStream, private val outputStream: OutputStream) {
-    suspend fun run(command: ObdCommand, delayTime: Long = 0): ObdResponse {
-        val obdRawResponse = runCommand(command, delayTime)
+    private val responseCache = mutableMapOf<ObdCommand, ObdRawResponse>()
+
+    suspend fun run(command: ObdCommand, useCache: Boolean = false, delayTime: Long = 0): ObdResponse {
+        val obdRawResponse =
+            if (useCache && responseCache[command] != null) {
+                responseCache.getValue(command)
+            } else {
+                runCommand(command, delayTime).also {
+                    // Save response to cache
+                    responseCache[command] = it
+                }
+            }
         return command.handleResponse(obdRawResponse)
     }
 
