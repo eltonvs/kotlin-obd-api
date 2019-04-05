@@ -63,7 +63,6 @@ abstract class BaseTroubleCodesCommand : ObdCommand() {
 
         val workingData =
             when {
-                rawValue.contains("NODATA") -> ""
                 /* CAN(ISO-15765) protocol one frame: 43yy[codes]
                    Header is 43yy, yy showing the number of data items. */
                 (canOneFrameLength <= 16) and (canOneFrameLength % 4 == 0) -> canOneFrame.drop(4)
