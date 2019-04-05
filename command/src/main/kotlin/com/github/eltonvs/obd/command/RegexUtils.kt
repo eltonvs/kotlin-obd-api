@@ -10,8 +10,17 @@ object RegexPatterns {
     val CARRIAGE_PATTERN: Pattern = Pattern.compile("[\r\n]")
     val CARRIAGE_COLON_PATTERN: Pattern = Pattern.compile("[\r\n].:")
     val COLON_PATTERN: Pattern = Pattern.compile(":")
-    val DIGITS_LETTERS_PATTERN: Pattern = Pattern.compile("([0-9A-F])+")
+    val DIGITS_LETTERS_PATTERN: Pattern = Pattern.compile("([0-9A-F:])+")
     val STARTS_WITH_ALPHANUM_PATTERN: Pattern = Pattern.compile("[^a-z0-9 ]", Pattern.CASE_INSENSITIVE)
+
+    // Error patterns
+    const val BUSINIT_ERROR_MESSAGE_PATTERN = "BUS INIT... ERROR"
+    const val MISUNDERSTOOD_COMMAND_MESSAGE_PATTERN = "?"
+    const val NO_DATE_MESSAGE_PATTERN = "NO DATA"
+    const val STOPPED_MESSAGE_PATERN = "STOPPED"
+    const val UNABLE_TO_CONNECT_MESSAGE_PATTERN = "UNABLE TO CONNECT"
+    const val ERROR_MESSAGE_PATTERN = "ERROR"
+    const val UNSUPPORTED_COMMAND_MESSAGE_PATTERN = "7F 0[0-A] 1[1-2]"
 }
 
 
