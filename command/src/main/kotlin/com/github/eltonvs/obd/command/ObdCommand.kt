@@ -13,13 +13,15 @@ abstract class ObdCommand {
     val rawCommand: String
         get() = listOf(mode, pid).joinToString(" ")
 
-    fun handleResponse(rawResponse: ObdRawResponse): ObdResponse =
-        ObdResponse(
+    fun handleResponse(rawResponse: ObdRawResponse): ObdResponse {
+        val checkedRawResponse = BadResponseException.checkForExceptions(this, rawResponse)
+        return ObdResponse(
             command = this,
-            rawResponse = rawResponse,
-            value = handler(rawResponse),
+            rawResponse = checkedRawResponse,
+            value = handler(checkedRawResponse),
             unit = defaultUnit
         )
+    }
 
     open fun format(response: ObdResponse): String = "${response.value}${response.unit}"
 }

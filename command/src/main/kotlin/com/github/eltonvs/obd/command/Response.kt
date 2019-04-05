@@ -37,13 +37,6 @@ data class ObdRawResponse(
             },
             {
                 removeAll(COLON_PATTERN, it)
-            },
-            {
-                if (!DIGITS_LETTERS_PATTERN.matcher(it).matches()) {
-                    // Non Numeric Response Exception
-                    throw Exception(it)
-                }
-                it
             }
         )
     }
