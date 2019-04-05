@@ -1,5 +1,6 @@
 package com.github.eltonvs.obd.command.control
 
+import com.github.eltonvs.obd.command.NoDataException
 import com.github.eltonvs.obd.command.ObdRawResponse
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -98,8 +99,6 @@ class TroubleCodesCommandsParameterizedTests(private val rawValue: String, priva
             arrayOf("00A\r0:430401080118\r1:011901200000", listOf("P0108", "P0118", "P0119", "P0120")),
             // One frame with two dtc CAN (ISO-15765) format
             arrayOf("430201200121", listOf("P0120", "P0121")),
-            // No data
-            arrayOf("43NODATA", listOf<String>()),
             // Empty data
             arrayOf("4300", listOf<String>())
         )
@@ -112,6 +111,16 @@ class TroubleCodesCommandsParameterizedTests(private val rawValue: String, priva
             handleResponse(rawResponse)
         }
         assertEquals(expected.joinToString(separator = ","), obdResponse.formattedValue)
+    }
+}
+
+class TroubleCodesCommandsTests() {
+    @Test(expected = NoDataException::class)
+    fun `test trouble codes no data response`() {
+        val rawResponse = ObdRawResponse(value = "43NODATA", elapsedTime = 0)
+        TroubleCodesCommand().run {
+            handleResponse(rawResponse)
+        }
     }
 }
 
@@ -131,8 +140,6 @@ class PendingTroubleCodesCommandsParameterizedTests(private val rawValue: String
             arrayOf("00A\r0:470401080118\r1:011901200000", listOf("P0108", "P0118", "P0119", "P0120")),
             // One frame with two dtc CAN (ISO-15765) format
             arrayOf("470201200121", listOf("P0120", "P0121")),
-            // No data
-            arrayOf("47NODATA", listOf<String>()),
             // Empty data
             arrayOf("4700", listOf<String>())
         )
@@ -145,6 +152,16 @@ class PendingTroubleCodesCommandsParameterizedTests(private val rawValue: String
             handleResponse(rawResponse)
         }
         assertEquals(expected.joinToString(separator = ","), obdResponse.formattedValue)
+    }
+}
+
+class PendingTroubleCodesCommandsTests() {
+    @Test(expected = NoDataException::class)
+    fun `test pending trouble codes no data response`() {
+        val rawResponse = ObdRawResponse(value = "47NODATA", elapsedTime = 0)
+        PendingTroubleCodesCommand().run {
+            handleResponse(rawResponse)
+        }
     }
 }
 
@@ -167,8 +184,6 @@ class PermanentTroubleCodesCommandsParameterizedTests(
             arrayOf("00A\r0:4A0401080118\r1:011901200000", listOf("P0108", "P0118", "P0119", "P0120")),
             // One frame with two dtc CAN (ISO-15765) format
             arrayOf("4A0201200121", listOf("P0120", "P0121")),
-            // No data
-            arrayOf("4ANODATA", listOf<String>()),
             // Empty data
             arrayOf("4A00", listOf<String>())
         )
@@ -181,5 +196,15 @@ class PermanentTroubleCodesCommandsParameterizedTests(
             handleResponse(rawResponse)
         }
         assertEquals(expected.joinToString(separator = ","), obdResponse.formattedValue)
+    }
+}
+
+class PermanentTroubleCodesCommandsTests() {
+    @Test(expected = NoDataException::class)
+    fun `test permanent trouble codes no data response`() {
+        val rawResponse = ObdRawResponse(value = "4ANODATA", elapsedTime = 0)
+        PermanentTroubleCodesCommand().run {
+            handleResponse(rawResponse)
+        }
     }
 }
