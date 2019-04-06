@@ -2,7 +2,6 @@ package com.github.eltonvs.obd.command
 
 import com.github.eltonvs.obd.command.RegexPatterns.BUS_INIT_PATTERN
 import com.github.eltonvs.obd.command.RegexPatterns.COLON_PATTERN
-import com.github.eltonvs.obd.command.RegexPatterns.DIGITS_LETTERS_PATTERN
 import com.github.eltonvs.obd.command.RegexPatterns.WHITESPACE_PATTERN
 
 
@@ -41,11 +40,9 @@ data class ObdRawResponse(
         )
     }
 
-    private val processedValue: String
-        get() = value.pipe(*valueProcessorPipeline)
+    private val processedValue by lazy { value.pipe(*valueProcessorPipeline) }
 
-    val bufferedValue: IntArray
-        get() = processedValue.chunked(2) { it.toString().toInt(radix = 16) }.toIntArray()
+    val bufferedValue by lazy { processedValue.chunked(2) { it.toString().toInt(radix = 16) }.toIntArray() }
 }
 
 data class ObdResponse(
