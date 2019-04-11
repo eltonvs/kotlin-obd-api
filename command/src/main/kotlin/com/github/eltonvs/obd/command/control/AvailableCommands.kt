@@ -30,6 +30,6 @@ class AvailablePIDsCommand(private val range: AvailablePIDsRanges) : ObdCommand(
         PIDS_21_TO_40("PIDs from 21 to 40", "20"),
         PIDS_41_TO_60("PIDs from 41 to 60", "40"),
         PIDS_61_TO_80("PIDs from 61 to 80", "60"),
-        PIDS_81_TO_100("PIDs from 81 to 100", "80")
+        PIDS_81_TO_A0("PIDs from 81 to A0", "80")
     }
 }
