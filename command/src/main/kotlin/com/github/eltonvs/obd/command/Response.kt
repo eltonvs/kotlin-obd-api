@@ -40,7 +40,7 @@ data class ObdRawResponse(
         )
     }
 
-    private val processedValue by lazy { value.pipe(*valueProcessorPipeline) }
+    val processedValue by lazy { value.pipe(*valueProcessorPipeline) }
 
     val bufferedValue by lazy { processedValue.chunked(2) { it.toString().toInt(radix = 16) }.toIntArray() }
 }
