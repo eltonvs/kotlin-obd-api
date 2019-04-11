@@ -42,7 +42,11 @@ class AvailablePIDsCommand01to20ParameterizedTests(private val rawValue: String,
                 intArrayOf(
                     0x1, 0x3, 0x4, 0x5, 0x6, 0x7, 0xb, 0xc, 0xd, 0xe, 0xf, 0x11, 0x13, 0x14, 0x15, 0x1c, 0x1f, 0x20
                 )
-            )
+            ),
+            // Empty
+            arrayOf("00000000", intArrayOf()),
+            // Complete
+            arrayOf("FFFFFFFF", (0x1..0x20).toList().toIntArray())
         )
     }
 
@@ -72,7 +76,11 @@ class AvailablePIDsCommand21to40ParameterizedTests(private val rawValue: String,
             // Fiat Siena 2011
             arrayOf("80000000", intArrayOf(0x21)),
             // VW Gol 2014
-            arrayOf("8007A011", intArrayOf(0x21, 0x2e, 0x2f, 0x30, 0x31, 0x33, 0x3c, 0x40))
+            arrayOf("8007A011", intArrayOf(0x21, 0x2e, 0x2f, 0x30, 0x31, 0x33, 0x3c, 0x40)),
+            // Empty
+            arrayOf("00000000", intArrayOf()),
+            // Complete
+            arrayOf("FFFFFFFF", (0x21..0x40).toList().toIntArray())
         )
     }
 
@@ -103,7 +111,11 @@ class AvailablePIDsCommand41to60ParameterizedTests(private val rawValue: String,
             arrayOf(
                 "FED14400",
                 intArrayOf(0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x49, 0x4a, 0x4c, 0x50, 0x52, 0x56)
-            )
+            ),
+            // Empty
+            arrayOf("00000000", intArrayOf()),
+            // Complete
+            arrayOf("FFFFFFFF", (0x41..0x60).toList().toIntArray())
         )
     }
 
@@ -125,7 +137,11 @@ class AvailablePIDsCommand61to80ParameterizedTests(private val rawValue: String,
         @Parameterized.Parameters
         fun values() = listOf(
             // Toyota Corolla 2015
-            arrayOf("08000000", intArrayOf(0x65))
+            arrayOf("08000000", intArrayOf(0x65)),
+            // Empty
+            arrayOf("00000000", intArrayOf()),
+            // Complete
+            arrayOf("FFFFFFFF", (0x61..0x80).toList().toIntArray())
         )
     }
 
