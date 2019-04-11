@@ -4,7 +4,7 @@ import com.github.eltonvs.obd.command.ObdCommand
 import com.github.eltonvs.obd.command.ObdRawResponse
 
 
-class AvailablePIDsCommand(val range: AvailablePIDsRanges) : ObdCommand() {
+class AvailablePIDsCommand(private val range: AvailablePIDsRanges) : ObdCommand() {
     override val tag = "AVAILABLE_COMMANDS_${range.name}"
     override val name = "Available Commands - ${range.displayName}"
     override val mode = "01"
@@ -18,10 +18,9 @@ class AvailablePIDsCommand(val range: AvailablePIDsRanges) : ObdCommand() {
     private fun parsePIDs(rawValue: String): IntArray {
         val value = rawValue.toLong(radix = 16)
         val initialPID = range.pid.toInt(radix = 16)
-        return (1..33).fold(listOf<Int>()) { acc, i ->
-            if (getBit(value, i) == 1) acc + listOf(i + initialPID)
-            else acc
-        }.toIntArray()
+        return (1..33).fold(intArrayOf()) { acc, i ->
+            if (getBit(value, i) == 1) acc.plus(i + initialPID) else acc
+        }
     }
 
     private fun getBit(number: Long, position: Int) = (number shr (32 - position) and 1).toInt()
