@@ -154,3 +154,27 @@ class AvailablePIDsCommand61to80ParameterizedTests(private val rawValue: String,
         assertEquals(expected.joinToString(",") { "%02X".format(it) }, obdResponse.formattedValue)
     }
 }
+
+
+@RunWith(Parameterized::class)
+class AvailablePIDsCommand81toA0ParameterizedTests(private val rawValue: String, private val expected: IntArray) {
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters
+        fun values() = listOf(
+            // Empty
+            arrayOf("00000000", intArrayOf()),
+            // Complete
+            arrayOf("FFFFFFFF", (0x81..0xA0).toList().toIntArray())
+        )
+    }
+
+    @Test
+    fun `test valid available PIDs 81 to A0 responses handler`() {
+        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+        val obdResponse = AvailablePIDsCommand(AvailablePIDsCommand.AvailablePIDsRanges.PIDS_81_TO_A0).run {
+            handleResponse(rawResponse)
+        }
+        assertEquals(expected.joinToString(",") { "%02X".format(it) }, obdResponse.formattedValue)
+    }
+}
