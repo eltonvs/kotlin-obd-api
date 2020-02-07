@@ -8,6 +8,7 @@ abstract class ObdCommand {
     abstract val pid: String
 
     open val defaultUnit: String = ""
+    open val skipDigitCheck: Boolean = false
     open val handler: (ObdRawResponse) -> String = { it.value }
 
     val rawCommand: String
