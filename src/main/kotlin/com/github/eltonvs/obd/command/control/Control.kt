@@ -2,8 +2,11 @@ package com.github.eltonvs.obd.command.control
 
 import com.github.eltonvs.obd.command.ObdCommand
 import com.github.eltonvs.obd.command.ObdRawResponse
+import com.github.eltonvs.obd.command.RegexPatterns.BUS_INIT_PATTERN
 import com.github.eltonvs.obd.command.RegexPatterns.STARTS_WITH_ALPHANUM_PATTERN
+import com.github.eltonvs.obd.command.RegexPatterns.WHITESPACE_PATTERN
 import com.github.eltonvs.obd.command.bytesToInt
+import com.github.eltonvs.obd.command.removeAll
 
 
 class ModuleVoltageCommand : ObdCommand() {
@@ -33,7 +36,7 @@ class VINCommand : ObdCommand() {
     override val pid = "02"
 
     override val defaultUnit = ""
-    override val handler = { it: ObdRawResponse -> parseVIN(it.value) }
+    override val handler = { it: ObdRawResponse -> parseVIN(removeAll(it.value, WHITESPACE_PATTERN, BUS_INIT_PATTERN)) }
 
     private fun parseVIN(rawValue: String): String {
         val workingData =

@@ -4,6 +4,7 @@ import com.github.eltonvs.obd.command.ObdCommand
 import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.RegexPatterns.CARRIAGE_COLON_PATTERN
 import com.github.eltonvs.obd.command.RegexPatterns.CARRIAGE_PATTERN
+import com.github.eltonvs.obd.command.RegexPatterns.WHITESPACE_PATTERN
 import com.github.eltonvs.obd.command.bytesToInt
 import com.github.eltonvs.obd.command.removeAll
 import java.util.regex.Pattern
@@ -57,8 +58,11 @@ abstract class BaseTroubleCodesCommand : ObdCommand() {
 
     abstract val carriageNumberPattern: Pattern
 
+    var troubleCodesList = listOf<String>()
+        private set
+
     private fun parseTroubleCodesList(rawValue: String): List<String> {
-        val canOneFrame: String = removeAll(CARRIAGE_PATTERN, rawValue)
+        val canOneFrame: String = removeAll(rawValue, CARRIAGE_PATTERN, WHITESPACE_PATTERN)
         val canOneFrameLength: Int = canOneFrame.length
 
         val workingData =
@@ -70,7 +74,7 @@ abstract class BaseTroubleCodesCommand : ObdCommand() {
                    Header is xxx43yy, xxx is bytes of information to follow, yy showing the number of data items. */
                 rawValue.contains(":") -> removeAll(CARRIAGE_COLON_PATTERN, rawValue).drop(7)
                 // ISO9141-2, KWP2000 Fast and KWP2000 5Kbps (ISO15031) protocols.
-                else -> removeAll(carriageNumberPattern, rawValue)
+                else -> removeAll(rawValue, carriageNumberPattern, WHITESPACE_PATTERN)
             }
 
         /* For each chunk of 4 chars:
@@ -88,7 +92,9 @@ abstract class BaseTroubleCodesCommand : ObdCommand() {
         }
 
         val idx = troubleCodesList.indexOf("P0000")
-        return if (idx < 0) troubleCodesList else troubleCodesList.take(idx)
+        return (if (idx < 0) troubleCodesList else troubleCodesList.take(idx)).also {
+            this.troubleCodesList = it
+        }
     }
 
     protected companion object {

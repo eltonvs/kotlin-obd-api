@@ -6,30 +6,37 @@ import com.github.eltonvs.obd.command.ObdResponse
 import com.github.eltonvs.obd.command.RegexPatterns.SEARCHING_PATTERN
 import com.github.eltonvs.obd.command.removeAll
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.io.InputStream
 import java.io.OutputStream
+import java.lang.Thread.sleep
 import kotlin.system.measureTimeMillis
 
 
 class ObdDeviceConnection(private val inputStream: InputStream, private val outputStream: OutputStream) {
     private val responseCache = mutableMapOf<ObdCommand, ObdRawResponse>()
 
-    suspend fun run(command: ObdCommand, useCache: Boolean = false, delayTime: Long = 0): ObdResponse {
+    @Synchronized
+    suspend fun run(
+        command: ObdCommand,
+        useCache: Boolean = false,
+        delayTime: Long = 0
+    ): ObdResponse = withContext(Dispatchers.IO) {
         val obdRawResponse =
             if (useCache && responseCache[command] != null) {
                 responseCache.getValue(command)
             } else {
                 runCommand(command, delayTime).also {
                     // Save response to cache
-                    responseCache[command] = it
+                    if (useCache) {
+                        responseCache[command] = it
+                    }
                 }
             }
-        return command.handleResponse(obdRawResponse)
+        command.handleResponse(obdRawResponse)
     }
 
-    private suspend fun runCommand(command: ObdCommand, delayTime: Long): ObdRawResponse {
+    private fun runCommand(command: ObdCommand, delayTime: Long): ObdRawResponse {
         var rawData = ""
         val elapsedTime = measureTimeMillis {
             sendCommand(command, delayTime)
@@ -38,21 +45,21 @@ class ObdDeviceConnection(private val inputStream: InputStream, private val outp
         return ObdRawResponse(rawData, elapsedTime)
     }
 
-    private suspend fun sendCommand(command: ObdCommand, delayTime: Long = 0) = withContext(Dispatchers.IO) {
+    private fun sendCommand(command: ObdCommand, delayTime: Long = 0) {
         outputStream.write("${command.rawCommand}\r".toByteArray())
         outputStream.flush()
         if (delayTime > 0) {
-            delay(delayTime)
+            sleep(delayTime)
         }
     }
 
-    private suspend fun readRawData(): String = withContext(Dispatchers.IO) {
+    private fun readRawData(): String {
         var b: Byte
         var c: Char
         val res = StringBuffer()
 
         // read until '>' arrives OR end of stream reached (-1)
-        while (true) {
+        while (inputStream.available() > 0) {
             b = inputStream.read().toByte()
             if (b < 0) {
                 break
@@ -64,6 +71,6 @@ class ObdDeviceConnection(private val inputStream: InputStream, private val outp
             res.append(c)
         }
 
-        removeAll(SEARCHING_PATTERN, res.toString()).trim()
+        return removeAll(SEARCHING_PATTERN, res.toString()).trim()
     }
 }

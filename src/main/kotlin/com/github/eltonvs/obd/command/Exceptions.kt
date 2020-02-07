@@ -33,7 +33,7 @@ abstract class BadResponseException(private val command: ObdCommand, private val
                         throw UnknownErrorException(command, response)
                     matches(UNSUPPORTED_COMMAND_MESSAGE_PATTERN.toRegex()) ->
                         throw UnSupportedCommandException(command, response)
-                    !matches(DIGITS_LETTERS_PATTERN.toRegex()) ->
+                    !command.skipDigitCheck && !matches(DIGITS_LETTERS_PATTERN.toRegex()) ->
                         throw NonNumericResponseException(command, response)
                     else -> response
                 }

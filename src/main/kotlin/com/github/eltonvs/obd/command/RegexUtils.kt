@@ -27,3 +27,6 @@ object RegexPatterns {
 fun removeAll(pattern: Pattern, input: String): String {
     return pattern.matcher(input).replaceAll("")
 }
+
+fun removeAll(input: String, vararg patterns: Pattern) =
+    patterns.fold(input) { acc, pattern -> removeAll(pattern, acc) }
