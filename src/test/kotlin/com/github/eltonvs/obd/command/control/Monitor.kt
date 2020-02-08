@@ -64,9 +64,9 @@ class MonitorStatusCurrentDriveCycleCommandTests(private val rawValue: String, p
         @Parameterized.Parameters
         fun values() = listOf(
             arrayOf(
-                "8307FF00", SensorStatusData(
-                    milOn = true,
-                    dtcCount = 3,
+                "0007FF00", SensorStatusData(
+                    milOn = false,
+                    dtcCount = 0,
                     isSpark = true,
                     items = Monitors.values().filter { it.isSparkIgnition ?: true }.map { it to completeStatus }.toMap()
                 )
