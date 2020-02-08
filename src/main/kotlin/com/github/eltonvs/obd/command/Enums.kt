@@ -38,3 +38,30 @@ enum class Switcher(internal val command: String) {
     ON("1"),
     OFF("0"),
 }
+
+enum class Monitors(
+    internal val displayName: String,
+    internal val isSparkIgnition: Boolean? = null,
+    internal val bitPos: Int
+) {
+    // Common
+    MISFIRE("Misfire", bitPos = 0),
+    FUEL_SYSTEM("Fuel System", bitPos = 1),
+    COMPREHENSIVE_COMPONENT("Comprehensive Component", bitPos = 2),
+    // Spark Ignition Monitors
+    CATALYST("Catalyst (CAT)", true, 0),
+    HEATED_CATALYST("Heated Catalyst", true, 1),
+    EVAPORATIVE_SYSTEM("Evaporative (EVAP) System", true, 2),
+    SECONDARY_AIR_SYSTEM("Secondary Air System", true, 3),
+    AC_REFRIGERANT("A/C Refrigerant", true, 4),
+    OXYGEN_SENSOR("Oxygen (O2) Sensor", true, 5),
+    OXYGEN_SENSOR_HEATER("Oxygen Sennsor Heater", true, 6),
+    EGR_SYSTEM("EGR (Exhaust Gas Recirculation) and/or VVT System", true, 7),
+    // Compression Ignition Monitors
+    MNHC_CATALYST("NMHC Catalyst", false, 0),
+    NOX_SCR_MONITOR("NOx/SCR Aftertreatment", false, 1),
+    BOOST_PRESSURE("Boost Pressure", false, 3),
+    EXHAUST_GAS_SENSOR("Exhaust Gas Sensor", false, 5),
+    PM_FILTER("PM Filter", false, 6),
+    EGR_VVT_SYSTEM("EGR (Exhaust Gas Recirculation) and/or VVT System", false, 7),
+}

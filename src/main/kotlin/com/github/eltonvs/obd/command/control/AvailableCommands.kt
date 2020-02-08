@@ -2,6 +2,7 @@ package com.github.eltonvs.obd.command.control
 
 import com.github.eltonvs.obd.command.ObdCommand
 import com.github.eltonvs.obd.command.ObdRawResponse
+import com.github.eltonvs.obd.command.getBitAt
 
 
 class AvailablePIDsCommand(private val range: AvailablePIDsRanges) : ObdCommand() {
@@ -19,11 +20,9 @@ class AvailablePIDsCommand(private val range: AvailablePIDsRanges) : ObdCommand(
         val value = rawValue.toLong(radix = 16)
         val initialPID = range.pid.toInt(radix = 16)
         return (1..33).fold(intArrayOf()) { acc, i ->
-            if (getBit(value, i) == 1) acc.plus(i + initialPID) else acc
+            if (value.getBitAt(i) == 1) acc.plus(i + initialPID) else acc
         }
     }
-
-    private fun getBit(number: Long, position: Int) = (number shr (32 - position) and 1).toInt()
 
     enum class AvailablePIDsRanges(val displayName: String, internal val pid: String) {
         PIDS_01_TO_20("PIDs from 01 to 20", "00"),
