@@ -9,4 +9,4 @@ jobs:
       - uses: actions/checkout@master
       - uses: MrRamych/gradle-actions@v4.0-openjdk-13
         with:
-          args: cleanTest test
+          args: clean test
