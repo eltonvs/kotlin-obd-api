@@ -1,8 +1,11 @@
 package com.github.eltonvs.obd.command.control
 
-import com.github.eltonvs.obd.command.*
+import com.github.eltonvs.obd.command.Monitors
+import com.github.eltonvs.obd.command.ObdCommand
+import com.github.eltonvs.obd.command.ObdRawResponse
+import com.github.eltonvs.obd.command.getBitAt
 
-data class SensorStatus(val available: Boolean? = null, val complete: Boolean? = null)
+data class SensorStatus(val available: Boolean, val complete: Boolean)
 data class SensorStatusData(
     val milOn: Boolean,
     val dtcCount: Int,
@@ -15,13 +18,7 @@ abstract class BaseMonitorStatus : ObdCommand() {
 
     override val defaultUnit = ""
     override val handler = { it: ObdRawResponse ->
-        parseData(
-            removeAll(
-                it.value,
-                RegexPatterns.WHITESPACE_PATTERN,
-                RegexPatterns.BUS_INIT_PATTERN
-            )
-        ).let { "" }
+        parseData(it.bufferedValue.takeLast(4)).let { "" }
     }
 
     var data: SensorStatusData? = null
@@ -40,8 +37,7 @@ abstract class BaseMonitorStatus : ObdCommand() {
      * 10000011 00000111 11111111 00000000
      *  [# DTC] X        [supprt] [~ready]
      */
-    private fun parseData(rawValue: String) {
-        val values = rawValue.chunked(2).map { it.toLong(radix = 16) }
+    private fun parseData(values: List<Int>) {
         if (values.size != 4) {
             return
         }
@@ -62,7 +58,7 @@ abstract class BaseMonitorStatus : ObdCommand() {
                 monitorMap[it] = SensorStatus(isAvailable, isComplete)
             }
         }
-        data = SensorStatusData(milOn, dtcCount.toInt(), isSpark, monitorMap)
+        data = SensorStatusData(milOn, dtcCount, isSpark, monitorMap)
     }
 }
 
