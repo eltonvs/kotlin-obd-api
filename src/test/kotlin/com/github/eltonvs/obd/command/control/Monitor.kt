@@ -19,7 +19,7 @@ class MonitorStatusSinceCodesClearedCommandTests(private val rawValue: String, p
         @Parameterized.Parameters
         fun values() = listOf(
             arrayOf(
-                "FFFFFFFF", SensorStatusData(
+                "8307FF00", SensorStatusData(
                     milOn = true,
                     dtcCount = 3,
                     isSpark = true,
