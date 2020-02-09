@@ -58,7 +58,7 @@ enum class Monitors(
     OXYGEN_SENSOR_HEATER("Oxygen Sennsor Heater", true, 6),
     EGR_SYSTEM("EGR (Exhaust Gas Recirculation) and/or VVT System", true, 7),
     // Compression Ignition Monitors
-    MNHC_CATALYST("NMHC Catalyst", false, 0),
+    NMHC_CATALYST("NMHC Catalyst", false, 0),
     NOX_SCR_MONITOR("NOx/SCR Aftertreatment", false, 1),
     BOOST_PRESSURE("Boost Pressure", false, 3),
     EXHAUST_GAS_SENSOR("Exhaust Gas Sensor", false, 5),
