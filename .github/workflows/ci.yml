@@ -1,0 +1,12 @@
+name: CI
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: eskatos/gradle-command-action@v1
+        with:
+          arguments: cleanTest test --rerun-tasks
