@@ -9,11 +9,12 @@
 [![GitHub license](https://img.shields.io/github/license/eltonvs/kotlin-obd-api)](https://github.com/eltonvs/kotlin-obd-api/blob/master/LICENSE)
 [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 
-A lightweight and developer driven API to query and parse OBD commands.
+
+A lightweight and developer-driven API to query and parse OBD commands.
 
 Written in pure Kotlin and platform agnostic with a simple and easy to use interface, so you can hack your car without any hassle. :blue_car:
 
-This is a flexible API that allows developers to plug in to any connection interface (bluetooth, wifi, usb...). By default we use an `ObdDeviceConnection` that receives an `InputStream` and a `OutputStream` as parameters (so if you can get this from you connection iterface, you're good to go :thumbsup:).
+This is a flexible API that allows developers to plug-in to any connection interface (Bluetooth, Wifi, USB...). By default we use an `ObdDeviceConnection` that receives an `InputStream` and an `OutputStream` as parameters (so if you can get this from your connection interface, you're good to go :thumbsup:).
 
 
 ## Installation
@@ -44,7 +45,7 @@ Or Maven:
 
 ## Basic Usage
 
-Get an `InputStream` and an `OutputStream` from your connection interface and create a `ObdDeviceConnection` instance.
+Get an `InputStream` and an `OutputStream` from your connection interface and create an `ObdDeviceConnection` instance.
 
 ```kotlin
 // Create ObdDeviceConnection instance
@@ -113,13 +114,13 @@ Here are a handul list of the main supported commands (sensors). For a full list
 - Trouble Codes (Current, Pending and Permanent)
 - Throttle Position
 - Fuel Pressure
-- Timing Advannce
+- Timing Advance
 - Intake Air Temperature
 - Mass Air Flow Rate (MAF)
 - Engine Run Time
 - Fuel Level Input
 - MIL ON/OFF
-- Vehicle Identification Number (VIIN)
+- Vehicle Identification Number (VIN)
 
 NOTE: Support for those commands will vary from car to car.
 
@@ -149,7 +150,7 @@ See also the list of [contributors](https://github.com/eltonvs/kotlin-obd-api/co
 This project is licensed under the Apache 2.0 License - See the [LICENCE](LICENSE) file for more details.
 
 
-## Acknowledgements
+## Acknowledgments
 
 - **Paulo Pires** - Creator of the [obd-java-api](https://github.com/pires/obd-java-api), on which the initial steps were based.
 - **[SmartMetropolis Project](http://smartmetropolis.imd.ufrn.br/)** (Digital Metropolis Institute - UFRN, Brazil) - Backed and sponsored the project development during the initial steps.
