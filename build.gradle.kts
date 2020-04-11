@@ -24,6 +24,11 @@ dependencies {
     testImplementation(kotlin("test-junit"))
 }
 
+val sourcesJar by tasks.creating(Jar::class) {
+    classifier = "sources"
+    from(sourceSets.getByName("main").allSource)
+}
+
 publishing {
     publications {
         create<MavenPublication>(publicationName) {
@@ -31,6 +36,7 @@ publishing {
             artifactId = project.name
             version = project.version.toString()
             from(components["java"])
+            artifact(sourcesJar)
         }
     }
 }
