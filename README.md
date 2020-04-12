@@ -6,6 +6,7 @@
 
 [![GitHub version](https://badge.fury.io/gh/eltonvs%2Fkotlin-obd-api.svg)](https://badge.fury.io/gh/eltonvs%2Fkotlin-obd-api)
 [![CI Status](https://github.com/eltonvs/kotlin-obd-api/workflows/CI/badge.svg)](https://github.com/eltonvs/kotlin-obd-api/actions?query=workflow%3ACI)
+[![codebeat badge](https://codebeat.co/badges/6af3e4ad-1171-4868-871f-9e5e6be63df9)](https://codebeat.co/projects/github-com-eltonvs-kotlin-obd-api-master)
 [![GitHub license](https://img.shields.io/github/license/eltonvs/kotlin-obd-api)](https://github.com/eltonvs/kotlin-obd-api/blob/master/LICENSE)
 [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 
