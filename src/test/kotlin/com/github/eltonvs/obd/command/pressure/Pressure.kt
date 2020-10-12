@@ -59,7 +59,6 @@ class IntakeManifoldPressureCommandParameterizedTests(private val rawValue: Stri
     }
 }
 
-
 @RunWith(Parameterized::class)
 class FuelPressureCommandParameterizedTests(private val rawValue: String, private val expected: Int) {
     companion object {
@@ -85,9 +84,32 @@ class FuelPressureCommandParameterizedTests(private val rawValue: String, privat
     }
 }
 
+@RunWith(Parameterized::class)
+class FuelRailPressureCommandParameterizedTests(private val rawValue: String, private val expected: Float) {
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters
+        fun values() = listOf(
+            arrayOf("41230000", 0.000f),
+            arrayOf("410B39", 4.503f),
+            arrayOf("410B6464", 2030.300f),
+            arrayOf("4123FFFF", 5177.265f)
+        )
+    }
+
+    @Test
+    fun `test valid fuel rail pressure responses handler`() {
+        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+        val obdResponse = FuelRailPressureCommand().run {
+            handleResponse(rawResponse)
+        }
+
+        assertEquals("%.3f".format(expected) + "kPa", obdResponse.formattedValue)
+    }
+}
 
 @RunWith(Parameterized::class)
-class FuelRailPressureCommandParameterizedTests(private val rawValue: String, private val expected: Int) {
+class FuelRailGaugePressureCommandParameterizedTests(private val rawValue: String, private val expected: Int) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters
@@ -102,9 +124,9 @@ class FuelRailPressureCommandParameterizedTests(private val rawValue: String, pr
     }
 
     @Test
-    fun `test valid fuel rail pressure responses handler`() {
+    fun `test valid fuel rail gauge pressure responses handler`() {
         val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse = FuelRailPressureCommand().run {
+        val obdResponse = FuelRailGaugePressureCommand().run {
             handleResponse(rawResponse)
         }
         assertEquals("${expected}kPa", obdResponse.formattedValue)

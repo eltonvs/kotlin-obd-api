@@ -39,6 +39,16 @@ class FuelRailPressureCommand : ObdCommand() {
     override val tag = "FUEL_RAIL_PRESSURE"
     override val name = "Fuel Rail Pressure"
     override val mode = "01"
+    override val pid = "22"
+
+    override val defaultUnit = "kPa"
+    override val handler = { it: ObdRawResponse -> "%.3f".format(bytesToInt(it.bufferedValue) * 0.079) }
+}
+
+class FuelRailGaugePressureCommand : ObdCommand() {
+    override val tag = "FUEL_RAIL_GAUGE_PRESSURE"
+    override val name = "Fuel Rail Gauge Pressure"
+    override val mode = "01"
     override val pid = "23"
 
     override val defaultUnit = "kPa"
