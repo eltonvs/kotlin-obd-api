@@ -50,6 +50,7 @@ Full list of supported commands.
 | `22` | `FUEL_RAIL_PRESSURE` | Fuel Rail Pressure |
 | `23` | `FUEL_RAIL_GAUGE_PRESSURE` | Fuel Rail Gauge Pressure |
 | `2C` | `COMMANDED_EGR` | Commanded EGR |
+| `2D` | `EGR_ERROR` | EGR Error |
 | `2F` | `FUEL_LEVEL` | Fuel Level |
 | `31` | `DISTANCE_TRAVELED_AFTER_CODES_CLEARED` | Distance traveled since codes cleared |
 | `33` | `BAROMETRIC_PRESSURE` | Barometric Pressure |
