@@ -16,7 +16,8 @@ class AirIntakeTemperatureCommandParameterizedTests(private val rawValue: String
             arrayOf("410F40", 24f),
             arrayOf("410F5D", 53f),
             arrayOf("410F00", -40f),
-            arrayOf("410FFF", 215f)
+            arrayOf("410FFF", 215f),
+            arrayOf("410FFFFF", 215f)
         )
     }
 
@@ -40,7 +41,8 @@ class AmbientAirTemperatureCommandParameterizedTests(private val rawValue: Strin
             arrayOf("414640", 24f),
             arrayOf("41465D", 53f),
             arrayOf("414600", -40f),
-            arrayOf("4146FF", 215f)
+            arrayOf("4146FF", 215f),
+            arrayOf("4146FFFF", 215f)
         )
     }
 
@@ -64,7 +66,8 @@ class EngineCoolantTemperatureCommandParameterizedTests(private val rawValue: St
             arrayOf("410540", 24f),
             arrayOf("41055D", 53f),
             arrayOf("410500", -40f),
-            arrayOf("4105FF", 215f)
+            arrayOf("4105FF", 215f),
+            arrayOf("4105FFFF", 215f)
         )
     }
 
@@ -88,7 +91,8 @@ class OilTemperatureCommandParameterizedTests(private val rawValue: String, priv
             arrayOf("415C40", 24f),
             arrayOf("415C5D", 53f),
             arrayOf("415C00", -40f),
-            arrayOf("415CFF", 215f)
+            arrayOf("415CFF", 215f),
+            arrayOf("415CFFFF", 215f)
         )
     }
 

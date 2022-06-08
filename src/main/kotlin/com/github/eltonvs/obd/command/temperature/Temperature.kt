@@ -5,7 +5,7 @@ import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.bytesToInt
 
 
-private fun calculateTemperature(rawValue: IntArray): Float = bytesToInt(rawValue) - 40f
+private fun calculateTemperature(rawValue: IntArray): Float = bytesToInt(rawValue, bytesToProcess = 1) - 40f
 
 class AirIntakeTemperatureCommand : ObdCommand() {
     override val tag = "AIR_INTAKE_TEMPERATURE"
