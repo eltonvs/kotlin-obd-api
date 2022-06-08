@@ -13,7 +13,8 @@ fun bytesToInt(bufferedValue: IntArray, start: Int = 2, bytesToProcess: Int = -1
     }
 }
 
-fun calculatePercentage(bufferedValue: IntArray): Float = (bytesToInt(bufferedValue) * 100f) / 255f
+fun calculatePercentage(bufferedValue: IntArray, bytesToProcess: Int = -1): Float =
+    (bytesToInt(bufferedValue, bytesToProcess = bytesToProcess) * 100f) / 255f
 
 fun Int.getBitAt(position: Int, last: Int = 32) = this shr (last - position) and 1
 
