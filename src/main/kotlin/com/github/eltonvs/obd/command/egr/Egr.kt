@@ -12,7 +12,7 @@ class CommandedEgrCommand : ObdCommand() {
     override val pid = "2C"
 
     override val defaultUnit = "%"
-    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue)) }
+    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }
 }
 
 class EgrErrorCommand : ObdCommand() {

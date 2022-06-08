@@ -86,7 +86,8 @@ class GenericFuelLevelCommandParameterizedTests(private val rawValue: String, pr
             arrayOf("412F10", 6.3f),
             arrayOf("412FC8", 78.4f),
             arrayOf("412F00", 0f),
-            arrayOf("412FFF", 100f)
+            arrayOf("412FFF", 100f),
+            arrayOf("412FFFFF", 100f)
         )
     }
 

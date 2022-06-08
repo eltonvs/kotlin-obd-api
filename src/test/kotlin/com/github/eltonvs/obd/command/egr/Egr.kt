@@ -14,7 +14,8 @@ class CommandedEgrCommandParameterizedTests(private val rawValue: String, privat
         fun values() = listOf(
             arrayOf("414545", 27.1f),
             arrayOf("414500", 0f),
-            arrayOf("4145FF", 100f)
+            arrayOf("4145FF", 100f),
+            arrayOf("4145FFFF", 100f)
         )
     }
 

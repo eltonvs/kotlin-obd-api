@@ -59,7 +59,7 @@ class FuelLevelCommand : ObdCommand() {
     override val pid = "2F"
 
     override val defaultUnit = "%"
-    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue)) }
+    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }
 }
 
 class EthanolLevelCommand : ObdCommand() {
@@ -69,7 +69,7 @@ class EthanolLevelCommand : ObdCommand() {
     override val pid = "52"
 
     override val defaultUnit = "%"
-    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue)) }
+    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }
 }
 
 class FuelTrimCommand(fuelTrimBank: FuelTrimBank) : ObdCommand() {
