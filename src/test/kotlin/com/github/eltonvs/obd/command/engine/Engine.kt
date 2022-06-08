@@ -16,7 +16,8 @@ class SpeedCommandParameterizedTests(private val rawValue: String, private val e
             arrayOf("410D15", 21),
             arrayOf("410D40", 64),
             arrayOf("410D00", 0),
-            arrayOf("410DFF", 255)
+            arrayOf("410DFF", 255),
+            arrayOf("410DFFFF", 255)
         )
     }
 

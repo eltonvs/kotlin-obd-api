@@ -13,7 +13,7 @@ class SpeedCommand : ObdCommand() {
     override val pid = "0D"
 
     override val defaultUnit = "Km/h"
-    override val handler = { it: ObdRawResponse -> bytesToInt(it.bufferedValue).toString() }
+    override val handler = { it: ObdRawResponse -> bytesToInt(it.bufferedValue, bytesToProcess = 1).toString() }
 }
 
 class RPMCommand : ObdCommand() {
