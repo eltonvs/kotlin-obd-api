@@ -17,7 +17,8 @@ class CommandedEquivalenceRatioCommandParameterizedTests(private val rawValue: S
             arrayOf("41444040", 0.5f),
             arrayOf("41448080", 1f),
             arrayOf("41440000", 0f),
-            arrayOf("4144FFFF", 2f)
+            arrayOf("4144FFFF", 2f),
+            arrayOf("4144FFFFFFFF", 2f)
         )
     }
 
@@ -42,7 +43,8 @@ class FuelAirEquivalenceRatioCommandParameterizedTests(private val rawValue: Str
             arrayOf("41344040", 0.5f),
             arrayOf("41348080", 1f),
             arrayOf("41340000", 0f),
-            arrayOf("4134FFFF", 2f)
+            arrayOf("4134FFFF", 2f),
+            arrayOf("4134FFFFFFFF", 2f)
         )
     }
 

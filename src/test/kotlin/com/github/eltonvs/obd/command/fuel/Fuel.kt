@@ -60,7 +60,9 @@ class FuelTypeCommandParameterizedTests(private val rawValue: String, private va
             arrayOf("415114", "Hybrid Electric"),
             arrayOf("415115", "Hybrid Mixed"),
             arrayOf("415116", "Hybrid Regenerative"),
-            arrayOf("4151FF", "Unknown")
+            arrayOf("415116FF", "Hybrid Regenerative"),
+            arrayOf("4151FF", "Unknown"),
+            arrayOf("4151FFFF", "Unknown")
         )
     }
 
@@ -119,7 +121,8 @@ class GenericFuelTrimCommandParameterizedTests(private val rawValue: String, pri
             arrayOf("410680", 0f),
             arrayOf("4106C8", 56.25f),
             arrayOf("410600", -100f),
-            arrayOf("4106FF", 99.2f)
+            arrayOf("4106FF", 99.2f),
+            arrayOf("4106FFFF", 99.2f)
         )
     }
 
