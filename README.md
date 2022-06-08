@@ -38,7 +38,7 @@ dependencies {
   ...
 
   // Kolin OBD API
-  implementation 'com.github.eltonvs:kotlin-obd-api:1.1.1'
+  implementation 'com.github.eltonvs:kotlin-obd-api:1.1.2'
 }
 ```
 
@@ -59,7 +59,7 @@ Add the dependency
 <dependency>
   <groupId>com.github.eltonvs</groupId>
   <artifactId>kotlin-obd-api</artifactId>
-  <version>1.1.1</version>
+  <version>1.1.2</version>
 </dependency>
 ```
 
