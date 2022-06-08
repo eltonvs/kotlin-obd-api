@@ -37,7 +37,7 @@ class ObdDeviceConnection(private val inputStream: InputStream, private val outp
     }
 
     private fun runCommand(command: ObdCommand, delayTime: Long): ObdRawResponse {
-        var rawData = ""
+        var rawData: String
         val elapsedTime = measureTimeMillis {
             sendCommand(command, delayTime)
             rawData = readRawData()
@@ -64,7 +64,7 @@ class ObdDeviceConnection(private val inputStream: InputStream, private val outp
             if (b < 0) {
                 break
             }
-            c = b.toChar()
+            c = b.toInt().toChar()
             if (c == '>') {
                 break
             }
