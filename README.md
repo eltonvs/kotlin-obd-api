@@ -21,10 +21,18 @@ This is a flexible API that allows developers to plug-in to any connection inter
 
 ## Installation
 
-You can download a jar from GitHub's [releases page](https://github.com/eltonvs/kotlin-obd-api/releases).
 
-Or use Gradle:
+### Gradle
 
+In your root `build.gradle` file, at the end of repositories:
+```gradle
+repositories {
+  ...
+  maven { url 'https://jitpack.io' }
+}
+```
+
+Add the dependency
 ```gradle
 dependencies {
   ...
@@ -34,8 +42,19 @@ dependencies {
 }
 ```
 
-Or Maven:
+### Maven
 
+Add jitpack to the repositories section
+```xml
+<repositories>
+  <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+  </repository>
+</repositories>
+```
+
+Add the dependency
 ```xml
 <dependency>
   <groupId>com.github.eltonvs</groupId>
@@ -44,6 +63,9 @@ Or Maven:
 </dependency>
 ```
 
+### Manual
+
+You can download a jar from GitHub's [releases page](https://github.com/eltonvs/kotlin-obd-api/releases).
 
 ## Basic Usage
 
