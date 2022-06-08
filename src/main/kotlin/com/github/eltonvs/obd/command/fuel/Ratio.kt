@@ -5,7 +5,7 @@ import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.bytesToInt
 
 
-private fun calculateFuelAirRatio(rawValue: IntArray): Float = bytesToInt(rawValue) * (2 / 65_536f)
+private fun calculateFuelAirRatio(rawValue: IntArray): Float = bytesToInt(rawValue, bytesToProcess = 2) * (2 / 65_536f)
 
 class CommandedEquivalenceRatioCommand : ObdCommand() {
     override val tag = "COMMANDED_EQUIVALENCE_RATIO"

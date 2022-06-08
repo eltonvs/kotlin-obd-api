@@ -13,7 +13,7 @@ class SpeedCommand : ObdCommand() {
     override val pid = "0D"
 
     override val defaultUnit = "Km/h"
-    override val handler = { it: ObdRawResponse -> bytesToInt(it.bufferedValue).toString() }
+    override val handler = { it: ObdRawResponse -> bytesToInt(it.bufferedValue, bytesToProcess = 1).toString() }
 }
 
 class RPMCommand : ObdCommand() {
@@ -60,7 +60,7 @@ class LoadCommand : ObdCommand() {
     override val pid = "04"
 
     override val defaultUnit = "%"
-    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue)) }
+    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }
 }
 
 class AbsoluteLoadCommand : ObdCommand() {
@@ -80,7 +80,7 @@ class ThrottlePositionCommand : ObdCommand() {
     override val pid = "11"
 
     override val defaultUnit = "%"
-    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue)) }
+    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }
 }
 
 class RelativeThrottlePositionCommand : ObdCommand() {
@@ -90,5 +90,5 @@ class RelativeThrottlePositionCommand : ObdCommand() {
     override val pid = "45"
 
     override val defaultUnit = "%"
-    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue)) }
+    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }
 }

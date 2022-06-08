@@ -18,7 +18,8 @@ class BarometricPressureCommandParameterizedTests(private val rawValue: String, 
             arrayOf("413364", 100),
             arrayOf("413380", 128),
             arrayOf("413300", 0),
-            arrayOf("4133FF", 255)
+            arrayOf("4133FF", 255),
+            arrayOf("4133FFFF", 255)
         )
     }
 
@@ -45,7 +46,8 @@ class IntakeManifoldPressureCommandParameterizedTests(private val rawValue: Stri
             arrayOf("410B64", 100),
             arrayOf("410B80", 128),
             arrayOf("410B00", 0),
-            arrayOf("410BFF", 255)
+            arrayOf("410BFF", 255),
+            arrayOf("410BFFFF", 255)
         )
     }
 
@@ -70,7 +72,8 @@ class FuelPressureCommandParameterizedTests(private val rawValue: String, privat
             arrayOf("410A64", 300),
             arrayOf("410A80", 384),
             arrayOf("410A00", 0),
-            arrayOf("410AFF", 765)
+            arrayOf("410AFF", 765),
+            arrayOf("410AFFFF", 765)
         )
     }
 
