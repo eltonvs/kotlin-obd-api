@@ -12,7 +12,7 @@ class BarometricPressureCommand : ObdCommand() {
     override val pid = "33"
 
     override val defaultUnit = "kPa"
-    override val handler = { it: ObdRawResponse -> bytesToInt(it.bufferedValue).toString() }
+    override val handler = { it: ObdRawResponse -> bytesToInt(it.bufferedValue, bytesToProcess = 1).toString() }
 }
 
 class IntakeManifoldPressureCommand : ObdCommand() {
@@ -22,7 +22,7 @@ class IntakeManifoldPressureCommand : ObdCommand() {
     override val pid = "0B"
 
     override val defaultUnit = "kPa"
-    override val handler = { it: ObdRawResponse -> bytesToInt(it.bufferedValue).toString() }
+    override val handler = { it: ObdRawResponse -> bytesToInt(it.bufferedValue, bytesToProcess = 1).toString() }
 }
 
 class FuelPressureCommand : ObdCommand() {
@@ -32,7 +32,7 @@ class FuelPressureCommand : ObdCommand() {
     override val pid = "0A"
 
     override val defaultUnit = "kPa"
-    override val handler = { it: ObdRawResponse -> (bytesToInt(it.bufferedValue) * 3).toString() }
+    override val handler = { it: ObdRawResponse -> (bytesToInt(it.bufferedValue, bytesToProcess = 1) * 3).toString() }
 }
 
 class FuelRailPressureCommand : ObdCommand() {
