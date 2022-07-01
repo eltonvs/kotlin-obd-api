@@ -63,7 +63,6 @@ class ObdDeviceConnection(private val inputStream: InputStream, private val outp
         withContext(Dispatchers.IO) {
             // read until '>' arrives OR end of stream reached (-1)
             while (inputStream.available() > 0) {
-                //println("InputStream Available: ${inputStream.available()}")
                 b = inputStream.read().toByte()
                 if (b < 0) {
                     break
