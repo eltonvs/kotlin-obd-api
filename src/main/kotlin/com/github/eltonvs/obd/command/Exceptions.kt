@@ -11,7 +11,7 @@ import com.github.eltonvs.obd.command.RegexPatterns.UNSUPPORTED_COMMAND_MESSAGE_
 import com.github.eltonvs.obd.command.RegexPatterns.WHITESPACE_PATTERN
 
 
-private fun String.sanitize(): String = removeAll(WHITESPACE_PATTERN, this).toUpperCase()
+private fun String.sanitize(): String = removeAll(WHITESPACE_PATTERN, this).uppercase()
 
 abstract class BadResponseException(private val command: ObdCommand, private val response: ObdRawResponse) :
     RuntimeException() {

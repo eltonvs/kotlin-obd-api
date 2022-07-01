@@ -16,7 +16,8 @@ class SpeedCommandParameterizedTests(private val rawValue: String, private val e
             arrayOf("410D15", 21),
             arrayOf("410D40", 64),
             arrayOf("410D00", 0),
-            arrayOf("410DFF", 255)
+            arrayOf("410DFF", 255),
+            arrayOf("410DFFFF", 255)
         )
     }
 
@@ -112,7 +113,8 @@ class LoadCommandParameterizedTests(private val rawValue: String, private val ex
         fun values() = listOf(
             arrayOf("410410", 6.3f),
             arrayOf("410400", 0f),
-            arrayOf("4104FF", 100f)
+            arrayOf("4104FF", 100f),
+            arrayOf("4104FFFF", 100f)
         )
     }
 
@@ -159,7 +161,8 @@ class ThrottlePositionCommandParameterizedTests(private val rawValue: String, pr
         fun values() = listOf(
             arrayOf("411111", 6.7f),
             arrayOf("411100", 0f),
-            arrayOf("4111FF", 100f)
+            arrayOf("4111FF", 100f),
+            arrayOf("4111FFFF", 100f)
         )
     }
 
@@ -182,7 +185,8 @@ class RelativeThrottlePositionCommandParameterizedTests(private val rawValue: St
         fun values() = listOf(
             arrayOf("414545", 27.1f),
             arrayOf("414500", 0f),
-            arrayOf("4145FF", 100f)
+            arrayOf("4145FF", 100f),
+            arrayOf("4145FFFF", 100f)
         )
     }
 

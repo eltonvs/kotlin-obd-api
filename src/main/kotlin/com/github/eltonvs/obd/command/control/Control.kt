@@ -26,7 +26,7 @@ class TimingAdvanceCommand : ObdCommand() {
     override val pid = "0E"
 
     override val defaultUnit = "°"
-    override val handler = { it: ObdRawResponse -> "%.2f".format(bytesToInt(it.bufferedValue) / 2f - 64) }
+    override val handler = { it: ObdRawResponse -> "%.2f".format(bytesToInt(it.bufferedValue, bytesToProcess = 1) / 2f - 64) }
 }
 
 class VINCommand : ObdCommand() {

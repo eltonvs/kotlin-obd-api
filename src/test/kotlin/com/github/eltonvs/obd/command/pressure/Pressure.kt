@@ -18,7 +18,8 @@ class BarometricPressureCommandParameterizedTests(private val rawValue: String, 
             arrayOf("413364", 100),
             arrayOf("413380", 128),
             arrayOf("413300", 0),
-            arrayOf("4133FF", 255)
+            arrayOf("4133FF", 255),
+            arrayOf("4133FFFF", 255)
         )
     }
 
@@ -45,7 +46,8 @@ class IntakeManifoldPressureCommandParameterizedTests(private val rawValue: Stri
             arrayOf("410B64", 100),
             arrayOf("410B80", 128),
             arrayOf("410B00", 0),
-            arrayOf("410BFF", 255)
+            arrayOf("410BFF", 255),
+            arrayOf("410BFFFF", 255)
         )
     }
 
@@ -59,7 +61,6 @@ class IntakeManifoldPressureCommandParameterizedTests(private val rawValue: Stri
     }
 }
 
-
 @RunWith(Parameterized::class)
 class FuelPressureCommandParameterizedTests(private val rawValue: String, private val expected: Int) {
     companion object {
@@ -71,7 +72,8 @@ class FuelPressureCommandParameterizedTests(private val rawValue: String, privat
             arrayOf("410A64", 300),
             arrayOf("410A80", 384),
             arrayOf("410A00", 0),
-            arrayOf("410AFF", 765)
+            arrayOf("410AFF", 765),
+            arrayOf("410AFFFF", 765)
         )
     }
 
@@ -85,9 +87,32 @@ class FuelPressureCommandParameterizedTests(private val rawValue: String, privat
     }
 }
 
+@RunWith(Parameterized::class)
+class FuelRailPressureCommandParameterizedTests(private val rawValue: String, private val expected: Float) {
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters
+        fun values() = listOf(
+            arrayOf("41230000", 0.000f),
+            arrayOf("410B39", 4.503f),
+            arrayOf("410B6464", 2030.300f),
+            arrayOf("4123FFFF", 5177.265f)
+        )
+    }
+
+    @Test
+    fun `test valid fuel rail pressure responses handler`() {
+        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+        val obdResponse = FuelRailPressureCommand().run {
+            handleResponse(rawResponse)
+        }
+
+        assertEquals("%.3f".format(expected) + "kPa", obdResponse.formattedValue)
+    }
+}
 
 @RunWith(Parameterized::class)
-class FuelRailPressureCommandParameterizedTests(private val rawValue: String, private val expected: Int) {
+class FuelRailGaugePressureCommandParameterizedTests(private val rawValue: String, private val expected: Int) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters
@@ -102,9 +127,9 @@ class FuelRailPressureCommandParameterizedTests(private val rawValue: String, pr
     }
 
     @Test
-    fun `test valid fuel rail pressure responses handler`() {
+    fun `test valid fuel rail gauge pressure responses handler`() {
         val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse = FuelRailPressureCommand().run {
+        val obdResponse = FuelRailGaugePressureCommand().run {
             handleResponse(rawResponse)
         }
         assertEquals("${expected}kPa", obdResponse.formattedValue)

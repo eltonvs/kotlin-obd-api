@@ -31,7 +31,7 @@ class IgnitionMonitorCommand : ATCommand() {
     override val name = "Ignition Monitor"
     override val pid = "IGN"
 
-    override val handler = { it: ObdRawResponse -> it.value.trim().toUpperCase() }
+    override val handler = { it: ObdRawResponse -> it.value.trim().uppercase() }
 }
 
 class AdapterVoltageCommand : ATCommand() {

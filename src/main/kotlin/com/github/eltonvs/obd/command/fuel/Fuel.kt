@@ -22,7 +22,7 @@ class FuelTypeCommand : ObdCommand() {
     override val mode = "01"
     override val pid = "51"
 
-    override val handler = { it: ObdRawResponse -> getFuelType(bytesToInt(it.bufferedValue).toInt()) }
+    override val handler = { it: ObdRawResponse -> getFuelType(bytesToInt(it.bufferedValue, bytesToProcess = 1).toInt()) }
 
     private fun getFuelType(code: Int): String = when (code) {
         0x00 -> "Not Available"
@@ -59,7 +59,7 @@ class FuelLevelCommand : ObdCommand() {
     override val pid = "2F"
 
     override val defaultUnit = "%"
-    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue)) }
+    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }
 }
 
 class EthanolLevelCommand : ObdCommand() {
@@ -69,7 +69,7 @@ class EthanolLevelCommand : ObdCommand() {
     override val pid = "52"
 
     override val defaultUnit = "%"
-    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue)) }
+    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }
 }
 
 class FuelTrimCommand(fuelTrimBank: FuelTrimBank) : ObdCommand() {
@@ -79,7 +79,7 @@ class FuelTrimCommand(fuelTrimBank: FuelTrimBank) : ObdCommand() {
     override val pid = fuelTrimBank.pid
 
     override val defaultUnit = "%"
-    override val handler = { it: ObdRawResponse -> "%.1f".format(bytesToInt(it.bufferedValue) * (100f / 128) - 100) }
+    override val handler = { it: ObdRawResponse -> "%.1f".format(bytesToInt(it.bufferedValue, bytesToProcess = 1) * (100f / 128) - 100) }
 
     enum class FuelTrimBank(val displayName: String, internal val pid: String) {
         SHORT_TERM_BANK_1("Short Term Fuel Trim Bank 1", "06"),

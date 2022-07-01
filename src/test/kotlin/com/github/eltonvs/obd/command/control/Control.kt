@@ -38,7 +38,8 @@ class TimingAdvanceCommandParameterizedTests(private val rawValue: String, priva
         fun values() = listOf(
             arrayOf("410E70", -8f),
             arrayOf("410E00", -64f),
-            arrayOf("410EFF", 63.5f)
+            arrayOf("410EFF", 63.5f),
+            arrayOf("410EFFFF", 63.5f)
         )
     }
 
