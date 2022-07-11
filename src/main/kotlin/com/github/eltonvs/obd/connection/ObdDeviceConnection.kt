@@ -67,7 +67,7 @@ class ObdDeviceConnection(private val inputStream: InputStream, private val outp
                 if (b < 0) {
                     break
                 }
-                c = b.toChar()
+                c = b.toInt().toChar()
                 if (c == '>') {
                     break
                 }
