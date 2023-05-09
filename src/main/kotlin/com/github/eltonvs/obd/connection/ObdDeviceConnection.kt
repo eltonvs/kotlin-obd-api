@@ -6,6 +6,7 @@ import com.github.eltonvs.obd.command.ObdResponse
 import com.github.eltonvs.obd.command.RegexPatterns.SEARCHING_PATTERN
 import com.github.eltonvs.obd.command.removeAll
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.InputStream
@@ -50,7 +51,7 @@ class ObdDeviceConnection(private val inputStream: InputStream, private val outp
             outputStream.write("${command.rawCommand}\r".toByteArray())
             outputStream.flush()
             if (delayTime > 0) {
-                sleep(delayTime)
+                delay(delayTime)
             }
         }
     }
@@ -61,19 +62,22 @@ class ObdDeviceConnection(private val inputStream: InputStream, private val outp
         val res = StringBuffer()
 
         withContext(Dispatchers.IO) {
-            // read until '>' arrives OR end of stream reached (-1)
-            while (inputStream.available() > 0) {
-                b = inputStream.read().toByte()
-                if (b < 0) {
-                    break
+        // read until '>' arrives OR end of stream reached (-1)
+            while (true) {
+                if(inputStream.available() > 0){
+                    b = inputStream.read().toByte()
+                    if (b < 0) {
+                        break
+                    }
+                    c = b.toInt().toChar()
+                    if (c == '>') {
+                        break
+                    }
+                    res.append(c)
+                }else{
+                    delay(500)
                 }
-                c = b.toInt().toChar()
-                if (c == '>') {
-                    break
-                }
-                res.append(c)
             }
-
             removeAll(SEARCHING_PATTERN, res.toString()).trim()
         }
     }
