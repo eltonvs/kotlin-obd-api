@@ -23,13 +23,14 @@ class ObdDeviceConnection(
     suspend fun run(
         command: ObdCommand,
         useCache: Boolean = false,
-        delayTime: Long = 0
+        delayTime: Long = 0,
+        maxRetries: Int = 5,
     ): ObdResponse = runBlocking {
         val obdRawResponse =
             if (useCache && responseCache[command] != null) {
                 responseCache.getValue(command)
             } else {
-                runCommand(command, delayTime).also {
+                runCommand(command, delayTime, maxRetries).also {
                     // Save response to cache
                     if (useCache) {
                         responseCache[command] = it
@@ -39,11 +40,11 @@ class ObdDeviceConnection(
         command.handleResponse(obdRawResponse)
     }
 
-    private suspend fun runCommand(command: ObdCommand, delayTime: Long): ObdRawResponse {
+    private suspend fun runCommand(command: ObdCommand, delayTime: Long, maxRetries: Int): ObdRawResponse {
         var rawData = ""
         val elapsedTime = measureTimeMillis {
             sendCommand(command, delayTime)
-            rawData = readRawData()
+            rawData = readRawData(maxRetries)
         }
         return ObdRawResponse(rawData, elapsedTime)
     }
@@ -58,14 +59,15 @@ class ObdDeviceConnection(
         }
     }
 
-    private suspend fun readRawData(): String = runBlocking {
+    private suspend fun readRawData(maxRetries: Int): String = runBlocking {
         var b: Byte
         var c: Char
         val res = StringBuffer()
+        var retriesCount = 0
 
         withContext(Dispatchers.IO) {
             // read until '>' arrives OR end of stream reached (-1)
-            while (true) {
+            while (retriesCount <= maxRetries) {
                 if (inputStream.available() > 0) {
                     b = inputStream.read().toByte()
                     if (b < 0) {
@@ -77,6 +79,7 @@ class ObdDeviceConnection(
                     }
                     res.append(c)
                 } else {
+                    retriesCount += 1
                     delay(500)
                 }
             }
