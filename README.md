@@ -4,7 +4,7 @@
 
 <h1 align="center">Kotlin OBD API</h1>
 
-[![GitHub version](https://badge.fury.io/gh/eltonvs%2Fkotlin-obd-api.svg)](https://badge.fury.io/gh/eltonvs%2Fkotlin-obd-api)
+[![GitHub release](https://img.shields.io/github/v/release/eltonvs/kotlin-obd-api)](https://github.com/eltonvs/kotlin-obd-api/releases)
 [![CI Status](https://github.com/eltonvs/kotlin-obd-api/workflows/CI/badge.svg)](https://github.com/eltonvs/kotlin-obd-api/actions?query=workflow%3ACI)
 [![Maintainability](https://api.codeclimate.com/v1/badges/e70f6ab78bdae20de178/maintainability)](https://codeclimate.com/github/eltonvs/kotlin-obd-api/maintainability)
 [![codebeat badge](https://codebeat.co/badges/6af3e4ad-1171-4868-871f-9e5e6be63df9)](https://codebeat.co/projects/github-com-eltonvs-kotlin-obd-api-master)
@@ -38,7 +38,7 @@ dependencies {
   ...
 
   // Kolin OBD API
-  implementation 'com.github.eltonvs:kotlin-obd-api:1.1.2'
+  implementation 'com.github.eltonvs:kotlin-obd-api:1.3.0'
 }
 ```
 
@@ -59,7 +59,7 @@ Add the dependency
 <dependency>
   <groupId>com.github.eltonvs</groupId>
   <artifactId>kotlin-obd-api</artifactId>
-  <version>1.1.2</version>
+  <version>1.3.0</version>
 </dependency>
 ```
 
