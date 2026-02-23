@@ -13,6 +13,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.InputStream
 import java.io.OutputStream
+import kotlin.system.measureTimeMillis
 
 
 class ObdDeviceConnection @JvmOverloads constructor(
@@ -44,10 +45,11 @@ class ObdDeviceConnection @JvmOverloads constructor(
     }
 
     private suspend fun runCommand(command: ObdCommand, delayTime: Long, maxRetries: Int): ObdRawResponse {
-        val start = System.currentTimeMillis()
-        sendCommand(command, delayTime)
-        val rawData = readRawData(maxRetries)
-        val elapsedTime = System.currentTimeMillis() - start
+        lateinit var rawData: String
+        val elapsedTime = measureTimeMillis {
+            sendCommand(command, delayTime)
+            rawData = readRawData(maxRetries)
+        }
         return ObdRawResponse(rawData, elapsedTime)
     }
 
