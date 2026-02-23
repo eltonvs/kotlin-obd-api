@@ -45,7 +45,7 @@ class ObdDeviceConnection @JvmOverloads constructor(
     }
 
     private suspend fun runCommand(command: ObdCommand, delayTime: Long, maxRetries: Int): ObdRawResponse {
-        var rawData: String
+        var rawData = ""
         val elapsedTime = measureTimeMillis {
             sendCommand(command, delayTime)
             rawData = readRawData(maxRetries)
