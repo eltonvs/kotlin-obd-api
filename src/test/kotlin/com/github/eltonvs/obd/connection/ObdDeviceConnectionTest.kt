@@ -6,8 +6,6 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.ArrayDeque
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -24,12 +22,11 @@ class ObdDeviceConnectionTest {
 
     @Test
     fun `runs one command at a time when invoked concurrently`() = runBlocking {
-        val firstResponseGate = CountDownLatch(1)
         val input = ScriptedInputStream()
         val output = ScriptedOutputStream(
             input = input,
             responses = mapOf(
-                "01 0D" to ResponsePlan(payload = "410D40>", gate = firstResponseGate),
+                "01 0D" to ResponsePlan(payload = "410D40>", autoEnqueue = false),
                 "01 0C" to ResponsePlan(payload = "410C1AF8>")
             )
         )
@@ -54,7 +51,7 @@ class ObdDeviceConnectionTest {
         delay(100)
         assertEquals(listOf("01 0D"), output.writes)
 
-        firstResponseGate.countDown()
+        input.enqueue("410D40>")
         first.await()
         second.await()
         assertEquals(listOf("01 0D", "01 0C"), output.writes)
@@ -124,8 +121,7 @@ private class TestObdCommand(
 
 private data class ResponsePlan(
     val payload: String,
-    val delayMs: Long = 0L,
-    val gate: CountDownLatch? = null
+    val autoEnqueue: Boolean = true
 )
 
 private class ScriptedInputStream : InputStream() {
@@ -147,11 +143,9 @@ private class ScriptedInputStream : InputStream() {
 
 private class ScriptedOutputStream(
     private val input: ScriptedInputStream,
-    private val responses: Map<String, ResponsePlan>,
-    private val onWrite: ((String) -> Unit)? = null
+    private val responses: Map<String, ResponsePlan>
 ) : OutputStream() {
     val writes = mutableListOf<String>()
-    val writeTimes = mutableListOf<Long>()
 
     override fun write(b: Int) {
         throw UnsupportedOperationException("write(Int) is not used in these tests")
@@ -161,25 +155,11 @@ private class ScriptedOutputStream(
     override fun write(b: ByteArray, off: Int, len: Int) {
         val rawCommand = String(b, off, len).trim()
         writes.add(rawCommand)
-        writeTimes.add(System.currentTimeMillis())
-        onWrite?.invoke(rawCommand)
 
         val plan = responses[rawCommand]
             ?: throw IllegalArgumentException("Missing scripted response for command [$rawCommand]")
 
-        if (plan.delayMs > 0 || plan.gate != null) {
-            Thread {
-                val gate = plan.gate
-                if (gate != null) {
-                    val released = gate.await(2, TimeUnit.SECONDS)
-                    if (!released) {
-                        return@Thread
-                    }
-                }
-                Thread.sleep(plan.delayMs)
-                input.enqueue(plan.payload)
-            }.start()
-        } else {
+        if (plan.autoEnqueue) {
             input.enqueue(plan.payload)
         }
     }
