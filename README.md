@@ -16,7 +16,7 @@ A lightweight and developer-driven API to query and parse OBD commands.
 
 Written in pure Kotlin and platform agnostic with a simple and easy to use interface, so you can hack your car without any hassle. :blue_car:
 
-This is a flexible API that allows developers to plug-in to any connection interface (Bluetooth, Wifi, USB...). By default we use an `ObdDeviceConnection` that receives an `InputStream` and an `OutputStream` as parameters (so if you can get this from your connection interface, you're good to go :thumbsup:).
+This is a flexible API that allows developers to plug-in to any connection interface (Bluetooth, Wi-Fi, USB...). By default we use an `ObdDeviceConnection` that receives an `InputStream` and an `OutputStream` as parameters (so if you can get this from your connection interface, you're good to go :thumbsup:).
 
 
 ## Installation
@@ -76,7 +76,7 @@ Get an `InputStream` and an `OutputStream` from your connection interface and cr
 val obdConnection = ObdDeviceConnection(inputStream, outputStream)
 ```
 
-With this, you're ready to run any command you want, just pass the command instance to the `.run` method. This command accepts 3 parameters: `command`, `useCache` (default = `false`) and `delayTime` (default = `0`).
+With this, you're ready to run any command you want, just pass the command instance to the `.run` method from a coroutine. This command accepts 4 parameters: `command`, `useCache` (default = `false`), `delayTime` (default = `0`) and `maxRetries` (default = `5`).
 
 ```kotlin
 // Retrieving OBD Speed Command
@@ -86,8 +86,12 @@ val response = obdConnection.run(SpeedCommand())
 val cachedResponse = obdConnection.run(VINCommand(), useCache = true)
 
 // With a delay time - with this, the API will wait 500ms after executing the command
-val delayedResponse = obdConnection(RPMCommand(), delayTime = 500L)
+val delayedResponse = obdConnection.run(RPMCommand(), delayTime = 500L)
 ```
+
+Android note: call `run()` from a background coroutine context (for example, `Dispatchers.IO`), not from the main thread.
+
+Concurrency note: each `ObdDeviceConnection` instance is a serialized command channel. Reuse one instance per physical connection.
 
 The retuned object is a `ObdResponse` and has the following attributes:
 
