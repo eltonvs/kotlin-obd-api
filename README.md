@@ -12,7 +12,9 @@
 [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 
 
-A lightweight Kotlin OBD-II (ELM327) library for any Kotlin/JVM project.
+A lightweight and developer-driven Kotlin OBD-II (ELM327) library for any Kotlin/JVM project to query and parse OBD commands.
+
+Written in pure Kotlin and platform agnostic with a simple and easy-to-use interface, so you can hack your car without any hassle. :blue_car:
 
 Use it to read and parse vehicle diagnostics over Bluetooth, Wi-Fi, or USB:
 
