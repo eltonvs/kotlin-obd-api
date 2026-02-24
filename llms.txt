@@ -1,0 +1,33 @@
+# kotlin-obd-api
+
+Kotlin OBD-II (ELM327) library for Kotlin/JVM applications.
+
+## Canonical
+- Repository: https://github.com/eltonvs/kotlin-obd-api
+- License: Apache-2.0
+- Artifact (JitPack): com.github.eltonvs:kotlin-obd-api:1.3.0
+
+## Use this library when
+- You need OBD-II diagnostics or live telemetry in Kotlin code.
+- You have an ELM327-compatible adapter exposed as `InputStream` + `OutputStream`.
+- You want parsed command responses (`ObdResponse`) instead of raw hex parsing.
+
+## Core API
+- `ObdDeviceConnection(inputStream, outputStream)`
+- `suspend fun run(command, useCache = false, delayTime = 0, maxRetries = 5): ObdResponse`
+
+## Common tasks
+- Read RPM/speed/temperatures/pressure.
+- Read VIN.
+- Read and clear trouble codes (DTC).
+- Send adapter AT commands (echo/headers/protocol/timeouts).
+
+## Behavior notes
+- Commands are serialized per connection instance (coroutine `Mutex`).
+- `run` is suspend and should be called from a background coroutine context.
+- Most parsed values are returned as strings with optional `unit`.
+
+## Docs
+- README: ./README.md
+- Full command list: ./SUPPORTED_COMMANDS.md
+- LLM implementation context: ./LLM_CONTEXT.md

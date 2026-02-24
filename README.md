@@ -5,46 +5,57 @@
 <h1 align="center">Kotlin OBD API</h1>
 
 [![GitHub release](https://img.shields.io/github/v/release/eltonvs/kotlin-obd-api)](https://github.com/eltonvs/kotlin-obd-api/releases)
-[![CI Status](https://github.com/eltonvs/kotlin-obd-api/workflows/CI/badge.svg)](https://github.com/eltonvs/kotlin-obd-api/actions?query=workflow%3ACI)
-[![Maintainability](https://api.codeclimate.com/v1/badges/e70f6ab78bdae20de178/maintainability)](https://codeclimate.com/github/eltonvs/kotlin-obd-api/maintainability)
-[![codebeat badge](https://codebeat.co/badges/6af3e4ad-1171-4868-871f-9e5e6be63df9)](https://codebeat.co/projects/github-com-eltonvs-kotlin-obd-api-master)
+[![CI Status](https://github.com/eltonvs/kotlin-obd-api/actions/workflows/ci.yml/badge.svg)](https://github.com/eltonvs/kotlin-obd-api/actions/workflows/ci.yml)
+[![Maintainability](https://qlty.sh/gh/eltonvs/projects/kotlin-obd-api/maintainability.svg)](https://qlty.sh/gh/eltonvs/projects/kotlin-obd-api)
 [![GitHub license](https://img.shields.io/github/license/eltonvs/kotlin-obd-api)](https://github.com/eltonvs/kotlin-obd-api/blob/master/LICENSE)
 [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 
 
-A lightweight and developer-driven API to query and parse OBD commands.
+A lightweight and developer-driven Kotlin OBD-II (ELM327) library for any Kotlin/JVM project to query and parse OBD commands.
 
-Written in pure Kotlin and platform agnostic with a simple and easy to use interface, so you can hack your car without any hassle. :blue_car:
+Written in pure Kotlin and platform agnostic with a simple and easy-to-use interface, so you can hack your car without any hassle. :blue_car:
 
-This is a flexible API that allows developers to plug-in to any connection interface (Bluetooth, Wi-Fi, USB...). By default we use an `ObdDeviceConnection` that receives an `InputStream` and an `OutputStream` as parameters (so if you can get this from your connection interface, you're good to go :thumbsup:).
+Use it to read and parse vehicle diagnostics over Bluetooth, Wi-Fi, or USB:
 
+- Live telemetry (RPM, speed, throttle position, MAF, temperatures, pressure and more)
+- Diagnostic Trouble Codes (DTC): current, pending and permanent
+- VIN and monitor status commands
+- Adapter-level AT commands for ELM327 setup
+
+The API is connection-agnostic and receives an `InputStream` and an `OutputStream`, so you can integrate it with your own Bluetooth, Wi-Fi, or USB transport.
 
 ## Installation
 
+### Gradle (Kotlin DSL)
 
-### Gradle
-
-In your root `build.gradle` file, at the end of repositories:
-```gradle
+In your root `build.gradle.kts` file:
+```kotlin
 repositories {
-  ...
-  maven { url 'https://jitpack.io' }
+  maven("https://jitpack.io")
+}
+
+dependencies {
+  implementation("com.github.eltonvs:kotlin-obd-api:1.3.0")
 }
 ```
 
-Add the dependency
-```gradle
-dependencies {
-  ...
+### Gradle (Groovy)
 
-  // Kolin OBD API
+In your root `build.gradle` file:
+```gradle
+repositories {
+  maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+  // Kotlin OBD API
   implementation 'com.github.eltonvs:kotlin-obd-api:1.3.0'
 }
 ```
 
 ### Maven
 
-Add jitpack to the repositories section
+Add JitPack to the repositories section:
 ```xml
 <repositories>
   <repository>
@@ -54,7 +65,7 @@ Add jitpack to the repositories section
 </repositories>
 ```
 
-Add the dependency
+Add the dependency:
 ```xml
 <dependency>
   <groupId>com.github.eltonvs</groupId>
@@ -67,43 +78,59 @@ Add the dependency
 
 You can download a jar from GitHub's [releases page](https://github.com/eltonvs/kotlin-obd-api/releases).
 
-## Basic Usage
+## Quickstart
 
 Get an `InputStream` and an `OutputStream` from your connection interface and create an `ObdDeviceConnection` instance.
 
 ```kotlin
-// Create ObdDeviceConnection instance
-val obdConnection = ObdDeviceConnection(inputStream, outputStream)
+import com.github.eltonvs.obd.command.Switcher
+import com.github.eltonvs.obd.command.at.ResetAdapterCommand
+import com.github.eltonvs.obd.command.at.SetEchoCommand
+import com.github.eltonvs.obd.command.control.TroubleCodesCommand
+import com.github.eltonvs.obd.command.control.VINCommand
+import com.github.eltonvs.obd.command.engine.RPMCommand
+import com.github.eltonvs.obd.connection.ObdDeviceConnection
+import java.io.InputStream
+import java.io.OutputStream
+
+suspend fun readObd(inputStream: InputStream, outputStream: OutputStream) {
+    val obdConnection = ObdDeviceConnection(inputStream, outputStream)
+
+    // Typical ELM327 setup
+    obdConnection.run(ResetAdapterCommand())
+    obdConnection.run(SetEchoCommand(Switcher.OFF))
+
+    val rpm = obdConnection.run(RPMCommand())
+    val vin = obdConnection.run(VINCommand(), useCache = true)
+    val troubleCodes = obdConnection.run(TroubleCodesCommand())
+
+    println("RPM: ${rpm.value} ${rpm.unit}")
+    println("VIN: ${vin.value}")
+    println("DTC: ${troubleCodes.value.ifBlank { "none" }}")
+}
 ```
 
-With this, you're ready to run any command you want, just pass the command instance to the `.run` method from a coroutine. This command accepts 4 parameters: `command`, `useCache` (default = `false`), `delayTime` (default = `0`) and `maxRetries` (default = `5`).
+`run` parameters:
+- `command`: any `ObdCommand`
+- `useCache` (default `false`): reuses previous raw responses for identical commands
+- `delayTime` (default `0`): delay in milliseconds after sending command
+- `maxRetries` (default `5`): read polling retries before giving up
 
-```kotlin
-// Retrieving OBD Speed Command
-val response = obdConnection.run(SpeedCommand())
+Runtime note: call `run()` from a background coroutine context (for example `Dispatchers.IO`). On Android, do not call it from the main thread.
 
-// Using cache (use with caution)
-val cachedResponse = obdConnection.run(VINCommand(), useCache = true)
+Concurrency note: each `ObdDeviceConnection` instance is a serialized command channel guarded by a coroutine `Mutex`. Reuse one instance per physical connection.
 
-// With a delay time - with this, the API will wait 500ms after executing the command
-val delayedResponse = obdConnection.run(RPMCommand(), delayTime = 500L)
-```
-
-Android note: call `run()` from a background coroutine context (for example, `Dispatchers.IO`), not from the main thread.
-
-Concurrency note: each `ObdDeviceConnection` instance is a serialized command channel. Reuse one instance per physical connection.
-
-The retuned object is a `ObdResponse` and has the following attributes:
+The returned object is an `ObdResponse` with:
 
 | Attribute | Type | Description |
 | :- | :- | :- |
 | `command` | `ObdCommand` | The command passed to the `run` method |
 | `rawResponse` | `ObdRawResponse` | This class holds the raw data returned from the car |
 | `value` | `String` | The parsed value |
-| `unit` | `String` | The unit from the parsed value (e.g.: `Km/h`, `RPM`, ... |
+| `unit` | `String` | The unit from the parsed value (for example: `Km/h`, `RPM`) |
 
 
-The `ObdRawResponse` has the following attributes:
+`ObdRawResponse` attributes:
 
 | Attribute | Type | Description |
 | :- | :- | :- |
@@ -115,25 +142,27 @@ The `ObdRawResponse` has the following attributes:
 
 ## Extending the library
 
-It's easy to add a custom command using this library, all you need to do is create a class extending the `ObdCommand` class and overriding the following methods:
+Create a custom command by extending `ObdCommand` and overriding the required fields:
 ```kotlin
 class CustomCommand : ObdCommand() {
     // Required
     override val tag = "CUSTOM_COMMAND"
-    override val name "Custom Command"
+    override val name = "Custom Command"
     override val mode = "01"
     override val pid = "FF"
 
     // Optional
     override val defaultUnit = ""
-    override val handler = { it: ObdRawResponse -> "Calculations to parse value from ${it.processedValue}" }
+    override val handler = { response: ObdRawResponse ->
+        "Calculated value from ${response.processedValue}"
+    }
 }
 ```
 
 
 ## Commands
 
-Here are a handul list of the main supported commands (sensors). For a full list, see [here](SUPPORTED_COMMANDS.md).
+Here is a short list of supported commands. For the full list, see [SUPPORTED_COMMANDS.md](SUPPORTED_COMMANDS.md).
 
 - Available Commands
 - Vehicle Speed
@@ -152,15 +181,22 @@ Here are a handul list of the main supported commands (sensors). For a full list
 
 NOTE: Support for those commands will vary from car to car.
 
+## LLM Context
+
+This repository includes LLM-focused docs for coding assistants and agents:
+
+- [llms.txt](llms.txt): short machine-readable index for quick retrieval
+- [LLM_CONTEXT.md](LLM_CONTEXT.md): API conventions, command examples, and decision guide
+
 
 ## Contributing
 
-Want to help or have something to add to the repo? problem on a specific feature?
+Want to help or have something to add to the repo? Found an issue in a specific feature?
 
--   Open an issue to explain the issue you want to solve  [Open an issue](https://github.com/eltonvs/kotlin-obd-api/issues)
--   After discussion to validate your ideas, you can open a PR or even a draft PR if the contribution is a big one  [Current PRs](https://github.com/eltonvs/kotlin-obd-api/pulls)
--   Run local verification before opening a PR: `./gradlew clean test ktlintCheck detekt`
--   Auto-format Kotlin sources locally when needed: `./gradlew ktlintFormat`
+- Open an issue to explain the problem you want to solve: [Open an issue](https://github.com/eltonvs/kotlin-obd-api/issues)
+- After discussion, open a PR (or draft PR for larger contributions): [Current PRs](https://github.com/eltonvs/kotlin-obd-api/pulls)
+- Run local verification before opening a PR: `./gradlew clean test ktlintCheck detekt`
+- Auto-format Kotlin sources when needed: `./gradlew ktlintFormat`
 
 
 ## Versioning
