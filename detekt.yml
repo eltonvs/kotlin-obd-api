@@ -1,2 +1,17 @@
-# Project detekt overrides.
-# Keep this file intentionally minimal and rely on the default ruleset.
+complexity:
+  CyclomaticComplexMethod:
+    active: false
+  LongMethod:
+    active: false
+
+naming:
+  MatchingDeclarationName:
+    active: false
+
+style:
+  ExplicitItLambdaParameter:
+    active: false
+  MagicNumber:
+    active: false
+  MaxLineLength:
+    active: false

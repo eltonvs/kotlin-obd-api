@@ -40,7 +40,6 @@ detekt {
     allRules = false
     ignoreFailures = false
     config.setFrom(files("$rootDir/detekt.yml"))
-    baseline = file("$rootDir/detekt-baseline.xml")
 }
 
 kotlin {
