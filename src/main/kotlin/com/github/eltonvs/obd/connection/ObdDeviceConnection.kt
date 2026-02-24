@@ -68,7 +68,7 @@ class ObdDeviceConnection @JvmOverloads constructor(
         var retriesCount = 0
 
         // read until '>' arrives OR end of stream reached (-1)
-        while (retriesCount <= maxRetries) {
+        while (true) {
             if (inputStream.available() > 0) {
                 val byteValue = inputStream.read()
                 if (byteValue == -1) {
@@ -80,6 +80,9 @@ class ObdDeviceConnection @JvmOverloads constructor(
                 }
                 res.append(charValue)
             } else {
+                if (retriesCount >= maxRetries) {
+                    break
+                }
                 retriesCount += 1
                 delay(500)
             }
@@ -87,5 +90,8 @@ class ObdDeviceConnection @JvmOverloads constructor(
         removeAll(SEARCHING_PATTERN, res.toString()).trim()
     }
 
-    private fun cacheKey(command: ObdCommand): String = "${command.javaClass.name}:${command.rawCommand}"
+    private fun cacheKey(command: ObdCommand): String {
+        val classKey = command::class.qualifiedName ?: command.javaClass.name
+        return "$classKey:${command.rawCommand}"
+    }
 }

@@ -13,6 +13,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.yield
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -48,7 +49,7 @@ class ObdDeviceConnectionTest {
             connection.run(rpmCommand)
         }
         secondStarted.await()
-        delay(100)
+        repeat(20) { yield() }
         assertEquals(listOf("01 0D"), output.writes)
 
         input.enqueue("410D40>")
@@ -105,6 +106,19 @@ class ObdDeviceConnectionTest {
 
                 assertFailsWith<CancellationException> { runningCommand.await() }
             }
+        }
+    }
+
+    @Test
+    fun `returns quickly when max retries is zero and no data is available`() = runBlocking {
+        val input = IdleInputStream()
+        val output = ByteArrayOutputStream()
+        val connection = ObdDeviceConnection(input, output, Dispatchers.Default)
+        val command = TestObdCommand(tag = "SPEED", pid = "0D")
+
+        withTimeout(400) {
+            val response = connection.run(command, maxRetries = 0)
+            assertEquals("", response.value)
         }
     }
 }
