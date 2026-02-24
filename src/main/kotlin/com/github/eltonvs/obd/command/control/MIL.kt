@@ -5,7 +5,6 @@ import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.ObdResponse
 import com.github.eltonvs.obd.command.bytesToInt
 
-
 class MILOnCommand : ObdCommand() {
     override val tag = "MIL_ON"
     override val name = "MIL on"

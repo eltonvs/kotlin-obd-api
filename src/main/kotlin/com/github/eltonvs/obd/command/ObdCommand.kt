@@ -1,6 +1,5 @@
 package com.github.eltonvs.obd.command
 
-
 abstract class ObdCommand {
     abstract val tag: String
     abstract val name: String
@@ -20,7 +19,7 @@ abstract class ObdCommand {
             command = this,
             rawResponse = checkedRawResponse,
             value = handler(checkedRawResponse),
-            unit = defaultUnit
+            unit = defaultUnit,
         )
     }
 

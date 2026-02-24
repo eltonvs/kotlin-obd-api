@@ -2,7 +2,6 @@ package com.github.eltonvs.obd.command
 
 import java.util.regex.Pattern
 
-
 object RegexPatterns {
     val WHITESPACE_PATTERN: Pattern = Pattern.compile("\\s")
     val BUS_INIT_PATTERN: Pattern = Pattern.compile("(BUS INIT)|(BUSINIT)|(\\.)")
@@ -23,10 +22,12 @@ object RegexPatterns {
     const val UNSUPPORTED_COMMAND_MESSAGE_PATTERN = "7F 0[0-A] 1[1-2]"
 }
 
+fun removeAll(
+    pattern: Pattern,
+    input: String,
+): String = pattern.matcher(input).replaceAll("")
 
-fun removeAll(pattern: Pattern, input: String): String {
-    return pattern.matcher(input).replaceAll("")
-}
-
-fun removeAll(input: String, vararg patterns: Pattern) =
-    patterns.fold(input) { acc, pattern -> removeAll(pattern, acc) }
+fun removeAll(
+    input: String,
+    vararg patterns: Pattern,
+) = patterns.fold(input) { acc, pattern -> removeAll(pattern, acc) }

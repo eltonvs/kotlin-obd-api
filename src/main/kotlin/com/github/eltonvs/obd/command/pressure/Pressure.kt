@@ -4,7 +4,6 @@ import com.github.eltonvs.obd.command.ObdCommand
 import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.bytesToInt
 
-
 class BarometricPressureCommand : ObdCommand() {
     override val tag = "BAROMETRIC_PRESSURE"
     override val name = "Barometric Pressure"

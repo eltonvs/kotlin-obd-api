@@ -2,7 +2,6 @@ package com.github.eltonvs.obd.command.at
 
 import com.github.eltonvs.obd.command.ATCommand
 
-
 class ResetAdapterCommand : ATCommand() {
     override val tag = "RESET_ADAPTER"
     override val name = "Reset OBD Adapter"

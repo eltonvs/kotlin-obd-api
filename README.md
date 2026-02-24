@@ -159,6 +159,8 @@ Want to help or have something to add to the repo? problem on a specific feature
 
 -   Open an issue to explain the issue you want to solve  [Open an issue](https://github.com/eltonvs/kotlin-obd-api/issues)
 -   After discussion to validate your ideas, you can open a PR or even a draft PR if the contribution is a big one  [Current PRs](https://github.com/eltonvs/kotlin-obd-api/pulls)
+-   Run local verification before opening a PR: `./gradlew clean test ktlintCheck detekt`
+-   Auto-format Kotlin sources locally when needed: `./gradlew ktlintFormat`
 
 
 ## Versioning

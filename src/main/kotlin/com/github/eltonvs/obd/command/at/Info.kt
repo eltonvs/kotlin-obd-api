@@ -4,7 +4,6 @@ import com.github.eltonvs.obd.command.ATCommand
 import com.github.eltonvs.obd.command.ObdProtocols
 import com.github.eltonvs.obd.command.ObdRawResponse
 
-
 class DescribeProtocolCommand : ATCommand() {
     override val tag = "DESCRIBE_PROTOCOL"
     override val name = "Describe Protocol"
