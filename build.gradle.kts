@@ -12,6 +12,7 @@ val publicationName = "kotlin-obd-api"
 plugins {
     kotlin("jvm") version "2.3.10"
     id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
+    id("dev.detekt") version "2.0.0-alpha.2"
     `maven-publish`
 }
 
@@ -32,6 +33,14 @@ dependencies {
 ktlint {
     version.set("1.8.0")
     ignoreFailures.set(false)
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    allRules = false
+    ignoreFailures = false
+    config.setFrom(files("$rootDir/detekt.yml"))
+    baseline = file("$rootDir/detekt-baseline.xml")
 }
 
 kotlin {

@@ -1,0 +1,137 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:Fuel.kt:FuelTypeCommand$private fun getFuelType: String</ID>
+    <ID>ExplicitItLambdaParameter:AvailableCommands.kt:AvailablePIDsCommand${ it: ObdRawResponse -&gt; parsePIDs(it.processedValue).joinToString(",") { "%02X".format(it) } }</ID>
+    <ID>ExplicitItLambdaParameter:Control.kt:ModuleVoltageCommand${ it: ObdRawResponse -&gt; "%.2f".format(bytesToInt(it.bufferedValue) / 1000f) }</ID>
+    <ID>ExplicitItLambdaParameter:Control.kt:TimingAdvanceCommand${ it: ObdRawResponse -&gt; "%.2f".format(bytesToInt(it.bufferedValue, bytesToProcess = 1) / 2f - 64) }</ID>
+    <ID>ExplicitItLambdaParameter:Control.kt:VINCommand${ it: ObdRawResponse -&gt; parseVIN(removeAll(it.value, WHITESPACE_PATTERN, BUS_INIT_PATTERN)) }</ID>
+    <ID>ExplicitItLambdaParameter:Egr.kt:CommandedEgrCommand${ it: ObdRawResponse -&gt; "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }</ID>
+    <ID>ExplicitItLambdaParameter:Egr.kt:EgrErrorCommand${ it: ObdRawResponse -&gt; "%.1f".format(bytesToInt(it.bufferedValue, bytesToProcess = 1) * (100f / 128) - 100) }</ID>
+    <ID>ExplicitItLambdaParameter:Engine.kt:AbsoluteLoadCommand${ it: ObdRawResponse -&gt; "%.1f".format(calculatePercentage(it.bufferedValue)) }</ID>
+    <ID>ExplicitItLambdaParameter:Engine.kt:LoadCommand${ it: ObdRawResponse -&gt; "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }</ID>
+    <ID>ExplicitItLambdaParameter:Engine.kt:MassAirFlowCommand${ it: ObdRawResponse -&gt; "%.2f".format(bytesToInt(it.bufferedValue) / 100f) }</ID>
+    <ID>ExplicitItLambdaParameter:Engine.kt:RPMCommand${ it: ObdRawResponse -&gt; (bytesToInt(it.bufferedValue) / 4).toString() }</ID>
+    <ID>ExplicitItLambdaParameter:Engine.kt:RelativeThrottlePositionCommand${ it: ObdRawResponse -&gt; "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }</ID>
+    <ID>ExplicitItLambdaParameter:Engine.kt:RuntimeCommand${ it: ObdRawResponse -&gt; parseRuntime(it.bufferedValue) }</ID>
+    <ID>ExplicitItLambdaParameter:Engine.kt:SpeedCommand${ it: ObdRawResponse -&gt; bytesToInt(it.bufferedValue, bytesToProcess = 1).toString() }</ID>
+    <ID>ExplicitItLambdaParameter:Engine.kt:ThrottlePositionCommand${ it: ObdRawResponse -&gt; "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }</ID>
+    <ID>ExplicitItLambdaParameter:Fuel.kt:EthanolLevelCommand${ it: ObdRawResponse -&gt; "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }</ID>
+    <ID>ExplicitItLambdaParameter:Fuel.kt:FuelConsumptionRateCommand${ it: ObdRawResponse -&gt; "%.1f".format(bytesToInt(it.bufferedValue) * 0.05) }</ID>
+    <ID>ExplicitItLambdaParameter:Fuel.kt:FuelLevelCommand${ it: ObdRawResponse -&gt; "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }</ID>
+    <ID>ExplicitItLambdaParameter:Fuel.kt:FuelTrimCommand${ it: ObdRawResponse -&gt; "%.1f".format(bytesToInt(it.bufferedValue, bytesToProcess = 1) * (100f / 128) - 100) }</ID>
+    <ID>ExplicitItLambdaParameter:Fuel.kt:FuelTypeCommand${ it: ObdRawResponse -&gt; getFuelType(bytesToInt(it.bufferedValue, bytesToProcess = 1).toInt()) }</ID>
+    <ID>ExplicitItLambdaParameter:Info.kt:DescribeProtocolNumberCommand${ it: ObdRawResponse -&gt; parseProtocolNumber(it).displayName }</ID>
+    <ID>ExplicitItLambdaParameter:Info.kt:IgnitionMonitorCommand${ it: ObdRawResponse -&gt; it.value.trim().uppercase() }</ID>
+    <ID>ExplicitItLambdaParameter:MIL.kt:DistanceMILOnCommand${ it: ObdRawResponse -&gt; bytesToInt(it.bufferedValue).toString() }</ID>
+    <ID>ExplicitItLambdaParameter:MIL.kt:MILOnCommand${ it: ObdRawResponse -&gt; val mil = it.bufferedValue[2] val milOn = (mil and 0x80) == 128 milOn.toString() }</ID>
+    <ID>ExplicitItLambdaParameter:MIL.kt:TimeSinceMILOnCommand${ it: ObdRawResponse -&gt; bytesToInt(it.bufferedValue).toString() }</ID>
+    <ID>ExplicitItLambdaParameter:Monitor.kt:BaseMonitorStatus${ it: ObdRawResponse -&gt; parseData(it.bufferedValue.takeLast(4)).let { "" } }</ID>
+    <ID>ExplicitItLambdaParameter:Pressure.kt:BarometricPressureCommand${ it: ObdRawResponse -&gt; bytesToInt(it.bufferedValue, bytesToProcess = 1).toString() }</ID>
+    <ID>ExplicitItLambdaParameter:Pressure.kt:FuelPressureCommand${ it: ObdRawResponse -&gt; (bytesToInt(it.bufferedValue, bytesToProcess = 1) * 3).toString() }</ID>
+    <ID>ExplicitItLambdaParameter:Pressure.kt:FuelRailGaugePressureCommand${ it: ObdRawResponse -&gt; (bytesToInt(it.bufferedValue) * 10).toString() }</ID>
+    <ID>ExplicitItLambdaParameter:Pressure.kt:FuelRailPressureCommand${ it: ObdRawResponse -&gt; "%.3f".format(bytesToInt(it.bufferedValue) * 0.079) }</ID>
+    <ID>ExplicitItLambdaParameter:Pressure.kt:IntakeManifoldPressureCommand${ it: ObdRawResponse -&gt; bytesToInt(it.bufferedValue, bytesToProcess = 1).toString() }</ID>
+    <ID>ExplicitItLambdaParameter:Ratio.kt:CommandedEquivalenceRatioCommand${ it: ObdRawResponse -&gt; "%.2f".format(calculateFuelAirRatio(it.bufferedValue)) }</ID>
+    <ID>ExplicitItLambdaParameter:Ratio.kt:FuelAirEquivalenceRatioCommand${ it: ObdRawResponse -&gt; "%.2f".format(calculateFuelAirRatio(it.bufferedValue)) }</ID>
+    <ID>ExplicitItLambdaParameter:Temperature.kt:AirIntakeTemperatureCommand${ it: ObdRawResponse -&gt; "%.1f".format(calculateTemperature(it.bufferedValue)) }</ID>
+    <ID>ExplicitItLambdaParameter:Temperature.kt:AmbientAirTemperatureCommand${ it: ObdRawResponse -&gt; "%.1f".format(calculateTemperature(it.bufferedValue)) }</ID>
+    <ID>ExplicitItLambdaParameter:Temperature.kt:EngineCoolantTemperatureCommand${ it: ObdRawResponse -&gt; "%.1f".format(calculateTemperature(it.bufferedValue)) }</ID>
+    <ID>ExplicitItLambdaParameter:Temperature.kt:OilTemperatureCommand${ it: ObdRawResponse -&gt; "%.1f".format(calculateTemperature(it.bufferedValue)) }</ID>
+    <ID>ExplicitItLambdaParameter:TroubleCodes.kt:BaseTroubleCodesCommand${ it: ObdRawResponse -&gt; parseTroubleCodesList(it.value).joinToString(separator = ",") }</ID>
+    <ID>ExplicitItLambdaParameter:TroubleCodes.kt:DTCNumberCommand${ it: ObdRawResponse -&gt; val mil = it.bufferedValue[2] val codeCount = mil and 0x7F codeCount.toString() }</ID>
+    <ID>ExplicitItLambdaParameter:TroubleCodes.kt:DistanceSinceCodesClearedCommand${ it: ObdRawResponse -&gt; bytesToInt(it.bufferedValue).toString() }</ID>
+    <ID>ExplicitItLambdaParameter:TroubleCodes.kt:TimeSinceCodesClearedCommand${ it: ObdRawResponse -&gt; bytesToInt(it.bufferedValue).toString() }</ID>
+    <ID>LongMethod:AvailableCommands.kt:AvailablePIDsCommand01to20ParameterizedTests.Companion$@JvmStatic @Parameterized.Parameters fun values</ID>
+    <ID>LoopWithTooManyJumpStatements:ObdDeviceConnection.kt:ObdDeviceConnection$while</ID>
+    <ID>MagicNumber:AvailableCommands.kt:AvailablePIDsCommand$33</ID>
+    <ID>MagicNumber:Control.kt:ModuleVoltageCommand$1000f</ID>
+    <ID>MagicNumber:Control.kt:TimingAdvanceCommand$64</ID>
+    <ID>MagicNumber:Control.kt:VINCommand$16</ID>
+    <ID>MagicNumber:Control.kt:VINCommand$9</ID>
+    <ID>MagicNumber:Egr.kt:EgrErrorCommand$100</ID>
+    <ID>MagicNumber:Egr.kt:EgrErrorCommand$100f</ID>
+    <ID>MagicNumber:Egr.kt:EgrErrorCommand$128</ID>
+    <ID>MagicNumber:Engine.kt:MassAirFlowCommand$100f</ID>
+    <ID>MagicNumber:Engine.kt:RPMCommand$4</ID>
+    <ID>MagicNumber:Engine.kt:RuntimeCommand$3600</ID>
+    <ID>MagicNumber:Engine.kt:RuntimeCommand$60</ID>
+    <ID>MagicNumber:Enums.kt:Monitors.AC_REFRIGERANT$4</ID>
+    <ID>MagicNumber:Enums.kt:Monitors.BOOST_PRESSURE$3</ID>
+    <ID>MagicNumber:Enums.kt:Monitors.EGR_SYSTEM$7</ID>
+    <ID>MagicNumber:Enums.kt:Monitors.EGR_VVT_SYSTEM$7</ID>
+    <ID>MagicNumber:Enums.kt:Monitors.EXHAUST_GAS_SENSOR$5</ID>
+    <ID>MagicNumber:Enums.kt:Monitors.OXYGEN_SENSOR$5</ID>
+    <ID>MagicNumber:Enums.kt:Monitors.OXYGEN_SENSOR_HEATER$6</ID>
+    <ID>MagicNumber:Enums.kt:Monitors.PM_FILTER$6</ID>
+    <ID>MagicNumber:Enums.kt:Monitors.SECONDARY_AIR_SYSTEM$3</ID>
+    <ID>MagicNumber:Fuel.kt:FuelConsumptionRateCommand$0.05</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTrimCommand$100</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTrimCommand$100f</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTrimCommand$128</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTypeCommand$0x03</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTypeCommand$0x04</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTypeCommand$0x05</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTypeCommand$0x06</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTypeCommand$0x07</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTypeCommand$0x08</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTypeCommand$0x09</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTypeCommand$0x0A</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTypeCommand$0x0B</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTypeCommand$0x0C</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTypeCommand$0x0E</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTypeCommand$0x10</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTypeCommand$0x11</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTypeCommand$0x12</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTypeCommand$0x13</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTypeCommand$0x14</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTypeCommand$0x15</ID>
+    <ID>MagicNumber:Fuel.kt:FuelTypeCommand$0x16</ID>
+    <ID>MagicNumber:MIL.kt:MILOnCommand$0x80</ID>
+    <ID>MagicNumber:MIL.kt:MILOnCommand$128</ID>
+    <ID>MagicNumber:Monitor.kt:BaseMonitorStatus$0x7F</ID>
+    <ID>MagicNumber:Monitor.kt:BaseMonitorStatus$3</ID>
+    <ID>MagicNumber:Monitor.kt:BaseMonitorStatus$4</ID>
+    <ID>MagicNumber:Monitor.kt:BaseMonitorStatus$5</ID>
+    <ID>MagicNumber:Monitor.kt:BaseMonitorStatus$8</ID>
+    <ID>MagicNumber:Mutations.kt:SetTimeoutCommand$0xFF</ID>
+    <ID>MagicNumber:ObdDeviceConnection.kt:ObdDeviceConnection$500</ID>
+    <ID>MagicNumber:ParserFunctions.kt:100f</ID>
+    <ID>MagicNumber:ParserFunctions.kt:255f</ID>
+    <ID>MagicNumber:ParserFunctions.kt:8</ID>
+    <ID>MagicNumber:Pressure.kt:FuelPressureCommand$3</ID>
+    <ID>MagicNumber:Pressure.kt:FuelRailGaugePressureCommand$10</ID>
+    <ID>MagicNumber:Pressure.kt:FuelRailPressureCommand$0.079</ID>
+    <ID>MagicNumber:Ratio.kt:65_536f</ID>
+    <ID>MagicNumber:Temperature.kt:40f</ID>
+    <ID>MagicNumber:TroubleCodes.kt:BaseTroubleCodesCommand$0b11</ID>
+    <ID>MagicNumber:TroubleCodes.kt:BaseTroubleCodesCommand$16</ID>
+    <ID>MagicNumber:TroubleCodes.kt:BaseTroubleCodesCommand$4</ID>
+    <ID>MagicNumber:TroubleCodes.kt:BaseTroubleCodesCommand$5</ID>
+    <ID>MagicNumber:TroubleCodes.kt:BaseTroubleCodesCommand$7</ID>
+    <ID>MagicNumber:TroubleCodes.kt:DTCNumberCommand$0x7F</ID>
+    <ID>MatchingDeclarationName:AvailableCommands.kt:AvailablePIDsCommand : ObdCommand</ID>
+    <ID>MatchingDeclarationName:ParserFunctions.kt:BytesToIntParameterizedTests</ID>
+    <ID>MatchingDeclarationName:RegexUtils.kt:RegexPatterns</ID>
+    <ID>MaxLineLength:AvailableCommands.kt:AvailablePIDsCommand01to20ParameterizedTests.Companion$intArrayOf(0x1, 0x3, 0x4, 0x5, 0x6, 0x7, 0xb, 0xc, 0xd, 0xe, 0xf, 0x11, 0x13, 0x14, 0x15, 0x1c, 0x20)</ID>
+    <ID>MaxLineLength:AvailableCommands.kt:AvailablePIDsCommand01to20ParameterizedTests.Companion$intArrayOf(0x1, 0x3, 0x4, 0x5, 0x6, 0x7, 0xc, 0xd, 0xe, 0xf, 0x10, 0x11, 0x13, 0x15, 0x1c, 0x1f, 0x20)</ID>
+    <ID>MaxLineLength:AvailableCommands.kt:AvailablePIDsCommand41to60ParameterizedTests.Companion$arrayOf&lt;Any&gt;("7ADC8001", intArrayOf(0x42, 0x43, 0x44, 0x45, 0x47, 0x49, 0x4a, 0x4c, 0x4d, 0x4e, 0x51, 0x60))</ID>
+    <ID>MaxLineLength:AvailableCommands.kt:AvailablePIDsCommand41to60ParameterizedTests.Companion$arrayOf&lt;Any&gt;("FED0C000", intArrayOf(0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x49, 0x4a, 0x4c, 0x51, 0x52))</ID>
+    <ID>MaxLineLength:Control.kt:TimingAdvanceCommand$override val handler = { it: ObdRawResponse -&gt; "%.2f".format(bytesToInt(it.bufferedValue, bytesToProcess = 1) / 2f - 64) }</ID>
+    <ID>MaxLineLength:Control.kt:VINCommand$private fun convertHexToString: String</ID>
+    <ID>MaxLineLength:Control.kt:VINCommandParameterizedTests.Companion$arrayOf&lt;Any&gt;("014 0: 49 02 01 39 42 47 1: 4B 54 34 38 56 30 4A 2: 47 31 34 31 38 30 39", "9BGKT48V0JG141809")</ID>
+    <ID>MaxLineLength:Control.kt:VINCommandParameterizedTests.Companion$arrayOf&lt;Any&gt;("490201000000394902023359425349020352375248490204454A323949020538313136", "93YBSR7RHEJ298116")</ID>
+    <ID>MaxLineLength:Control.kt:VINCommandParameterizedTests.Companion$arrayOf&lt;Any&gt;("4902010000005749020250305A5A4902035A39395A4902045453333949020532313234", "WP0ZZZ99ZTS392124")</ID>
+    <ID>MaxLineLength:Egr.kt:CommandedEgrCommand$override val handler = { it: ObdRawResponse -&gt; "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }</ID>
+    <ID>MaxLineLength:Egr.kt:EgrErrorCommand$override val handler = { it: ObdRawResponse -&gt; "%.1f".format(bytesToInt(it.bufferedValue, bytesToProcess = 1) * (100f / 128) - 100) }</ID>
+    <ID>MaxLineLength:Engine.kt:LoadCommand$override val handler = { it: ObdRawResponse -&gt; "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }</ID>
+    <ID>MaxLineLength:Engine.kt:RelativeThrottlePositionCommand$override val handler = { it: ObdRawResponse -&gt; "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }</ID>
+    <ID>MaxLineLength:Engine.kt:ThrottlePositionCommand$override val handler = { it: ObdRawResponse -&gt; "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }</ID>
+    <ID>MaxLineLength:Exceptions.kt:BadResponseException$override fun toString: String</ID>
+    <ID>MaxLineLength:Fuel.kt:EthanolLevelCommand$override val handler = { it: ObdRawResponse -&gt; "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }</ID>
+    <ID>MaxLineLength:Fuel.kt:FuelLevelCommand$override val handler = { it: ObdRawResponse -&gt; "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }</ID>
+    <ID>MaxLineLength:Fuel.kt:FuelTrimCommand$override val handler = { it: ObdRawResponse -&gt; "%.1f".format(bytesToInt(it.bufferedValue, bytesToProcess = 1) * (100f / 128) - 100) }</ID>
+    <ID>MaxLineLength:Fuel.kt:FuelTypeCommand$override val handler = { it: ObdRawResponse -&gt; getFuelType(bytesToInt(it.bufferedValue, bytesToProcess = 1).toInt()) }</ID>
+  </CurrentIssues>
+</SmellBaseline>

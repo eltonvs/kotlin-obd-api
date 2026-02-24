@@ -19,4 +19,4 @@ jobs:
           java-version: "25"
       - uses: gradle/actions/setup-gradle@v4
       - name: Verify
-        run: ./gradlew --no-daemon clean test ktlintCheck
+        run: ./gradlew --no-daemon clean test ktlintCheck detekt
