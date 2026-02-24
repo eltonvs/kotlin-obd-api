@@ -12,7 +12,7 @@
 [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 
 
-A lightweight Kotlin OBD-II (ELM327) library for Android and JVM projects.
+A lightweight Kotlin OBD-II (ELM327) library for any Kotlin/JVM project.
 
 Use it to read and parse vehicle diagnostics over Bluetooth, Wi-Fi, or USB:
 
@@ -115,7 +115,7 @@ suspend fun readObd(inputStream: InputStream, outputStream: OutputStream) {
 - `delayTime` (default `0`): delay in milliseconds after sending command
 - `maxRetries` (default `5`): read polling retries before giving up
 
-Android note: call `run()` from a background coroutine context (for example `Dispatchers.IO`), not from the main thread.
+Runtime note: call `run()` from a background coroutine context (for example `Dispatchers.IO`). On Android, do not call it from the main thread.
 
 Concurrency note: each `ObdDeviceConnection` instance is a serialized command channel guarded by a coroutine `Mutex`. Reuse one instance per physical connection.
 

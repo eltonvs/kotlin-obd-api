@@ -1,6 +1,6 @@
 # kotlin-obd-api
 
-Kotlin OBD-II (ELM327) library for Android/JVM projects.
+Kotlin OBD-II (ELM327) library for Kotlin/JVM applications.
 
 ## Canonical
 - Repository: https://github.com/eltonvs/kotlin-obd-api

@@ -8,7 +8,7 @@ This document helps coding assistants correctly choose and apply this library fo
 - Language: Kotlin (JVM)
 - Package: `com.github.eltonvs:kotlin-obd-api` (JitPack)
 - Primary purpose: query and parse OBD-II / ELM327 commands from Kotlin apps
-- Typical targets: Android and JVM desktop/server apps that already manage transport sockets/streams
+- Typical targets: any Kotlin/JVM app that can provide an `InputStream` and an `OutputStream` (Android, desktop, backend services, CLI tools, embedded Linux, etc.)
 
 ## When to Use
 
@@ -107,11 +107,12 @@ The library throws command/response-specific runtime exceptions (subclasses of `
 
 For robust apps, catch `BadResponseException` around command execution and apply retries/fallback based on command criticality.
 
-## Concurrency and Android Notes
+## Concurrency Notes
 
 - Call `run()` from a background coroutine context (for example `Dispatchers.IO`)
 - Reuse one `ObdDeviceConnection` per physical adapter/session
 - Do not execute commands in parallel against the same connection instance
+- On Android specifically, avoid calling `run()` on the main thread
 
 ## Command Coverage
 
