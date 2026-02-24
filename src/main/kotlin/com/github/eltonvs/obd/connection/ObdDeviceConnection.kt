@@ -15,6 +15,8 @@ import java.io.InputStream
 import java.io.OutputStream
 import kotlin.system.measureTimeMillis
 
+private const val READ_RETRY_DELAY_MS = 500L
+
 class ObdDeviceConnection
     @JvmOverloads
     constructor(
@@ -78,24 +80,28 @@ class ObdDeviceConnection
                 val res = StringBuilder()
                 var retriesCount = 0
 
-                // read until '>' arrives OR end of stream reached (-1)
-                while (true) {
+                // Read until '>' arrives, stream ends (-1), or retries are exhausted.
+                var isReading = true
+                while (isReading) {
                     if (inputStream.available() > 0) {
                         val byteValue = inputStream.read()
                         if (byteValue == -1) {
-                            break
+                            isReading = false
+                        } else {
+                            val charValue = byteValue.toChar()
+                            if (charValue == '>') {
+                                isReading = false
+                            } else {
+                                res.append(charValue)
+                            }
                         }
-                        val charValue = byteValue.toChar()
-                        if (charValue == '>') {
-                            break
-                        }
-                        res.append(charValue)
                     } else {
                         if (retriesCount >= maxRetries) {
-                            break
+                            isReading = false
+                        } else {
+                            retriesCount += 1
+                            delay(READ_RETRY_DELAY_MS)
                         }
-                        retriesCount += 1
-                        delay(500)
                     }
                 }
                 removeAll(SEARCHING_PATTERN, res.toString()).trim()

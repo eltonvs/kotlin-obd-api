@@ -1,5 +1,14 @@
 package com.github.eltonvs.obd.command
 
+private const val BIT_POS_0 = 0
+private const val BIT_POS_1 = 1
+private const val BIT_POS_2 = 2
+private const val BIT_POS_3 = 3
+private const val BIT_POS_4 = 4
+private const val BIT_POS_5 = 5
+private const val BIT_POS_6 = 6
+private const val BIT_POS_7 = 7
+
 enum class ObdProtocols(
     val displayName: String,
     internal val command: String,
@@ -63,25 +72,25 @@ enum class Monitors(
     internal val bitPos: Int,
 ) {
     // Common
-    MISFIRE("Misfire", bitPos = 0),
-    FUEL_SYSTEM("Fuel System", bitPos = 1),
-    COMPREHENSIVE_COMPONENT("Comprehensive Component", bitPos = 2),
+    MISFIRE("Misfire", bitPos = BIT_POS_0),
+    FUEL_SYSTEM("Fuel System", bitPos = BIT_POS_1),
+    COMPREHENSIVE_COMPONENT("Comprehensive Component", bitPos = BIT_POS_2),
 
     // Spark Ignition Monitors
-    CATALYST("Catalyst (CAT)", true, 0),
-    HEATED_CATALYST("Heated Catalyst", true, 1),
-    EVAPORATIVE_SYSTEM("Evaporative (EVAP) System", true, 2),
-    SECONDARY_AIR_SYSTEM("Secondary Air System", true, 3),
-    AC_REFRIGERANT("A/C Refrigerant", true, 4),
-    OXYGEN_SENSOR("Oxygen (O2) Sensor", true, 5),
-    OXYGEN_SENSOR_HEATER("Oxygen Sennsor Heater", true, 6),
-    EGR_SYSTEM("EGR (Exhaust Gas Recirculation) and/or VVT System", true, 7),
+    CATALYST("Catalyst (CAT)", true, BIT_POS_0),
+    HEATED_CATALYST("Heated Catalyst", true, BIT_POS_1),
+    EVAPORATIVE_SYSTEM("Evaporative (EVAP) System", true, BIT_POS_2),
+    SECONDARY_AIR_SYSTEM("Secondary Air System", true, BIT_POS_3),
+    AC_REFRIGERANT("A/C Refrigerant", true, BIT_POS_4),
+    OXYGEN_SENSOR("Oxygen (O2) Sensor", true, BIT_POS_5),
+    OXYGEN_SENSOR_HEATER("Oxygen Sennsor Heater", true, BIT_POS_6),
+    EGR_SYSTEM("EGR (Exhaust Gas Recirculation) and/or VVT System", true, BIT_POS_7),
 
     // Compression Ignition Monitors
-    NMHC_CATALYST("NMHC Catalyst", false, 0),
-    NOX_SCR_MONITOR("NOx/SCR Aftertreatment", false, 1),
-    BOOST_PRESSURE("Boost Pressure", false, 3),
-    EXHAUST_GAS_SENSOR("Exhaust Gas Sensor", false, 5),
-    PM_FILTER("PM Filter", false, 6),
-    EGR_VVT_SYSTEM("EGR (Exhaust Gas Recirculation) and/or VVT System", false, 7),
+    NMHC_CATALYST("NMHC Catalyst", false, BIT_POS_0),
+    NOX_SCR_MONITOR("NOx/SCR Aftertreatment", false, BIT_POS_1),
+    BOOST_PRESSURE("Boost Pressure", false, BIT_POS_3),
+    EXHAUST_GAS_SENSOR("Exhaust Gas Sensor", false, BIT_POS_5),
+    PM_FILTER("PM Filter", false, BIT_POS_6),
+    EGR_VVT_SYSTEM("EGR (Exhaust Gas Recirculation) and/or VVT System", false, BIT_POS_7),
 }

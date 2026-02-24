@@ -5,6 +5,18 @@ import com.github.eltonvs.obd.command.ObdCommand
 import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.getBitAt
 
+private const val MONITOR_BYTES_COUNT = 4
+private const val MIL_BIT_POSITION = 1
+private const val LAST_BIT_POSITION = 8
+private const val SPARK_CHECK_BIT_POSITION = 5
+private const val COMMON_MONITOR_COMPLETION_OFFSET = 4
+private const val DTC_COUNT_MASK = 0x7F
+private const val BIT_SET = 1
+private const val DATA_BYTE_0 = 0
+private const val DATA_BYTE_1 = 1
+private const val DATA_BYTE_2 = 2
+private const val DATA_BYTE_3 = 3
+
 data class SensorStatus(
     val available: Boolean,
     val complete: Boolean,
@@ -21,8 +33,9 @@ abstract class BaseMonitorStatus : ObdCommand() {
     override val mode = "01"
 
     override val defaultUnit = ""
-    override val handler = { it: ObdRawResponse ->
-        parseData(it.bufferedValue.takeLast(4)).let { "" }
+    override val handler = { response: ObdRawResponse ->
+        parseData(response.bufferedValue.takeLast(MONITOR_BYTES_COUNT))
+        ""
     }
 
     var data: SensorStatusData? = null
@@ -42,23 +55,27 @@ abstract class BaseMonitorStatus : ObdCommand() {
      *  [# DTC] X [supprt] [~ready]
      */
     private fun parseData(values: List<Int>) {
-        if (values.size != 4) {
+        if (values.size != MONITOR_BYTES_COUNT) {
             return
         }
-        val milOn = values[0].getBitAt(1, 8) == 1
-        val dtcCount = values[0] and 0x7F
-        val isSpark = values[1].getBitAt(5, 8) == 0
+        val milOn = values[DATA_BYTE_0].getBitAt(MIL_BIT_POSITION, LAST_BIT_POSITION) == BIT_SET
+        val dtcCount = values[DATA_BYTE_0] and DTC_COUNT_MASK
+        val isSpark = values[DATA_BYTE_1].getBitAt(SPARK_CHECK_BIT_POSITION, LAST_BIT_POSITION) == 0
 
         val monitorMap = HashMap<Monitors, SensorStatus>()
         Monitors.values().forEach {
-            val normalizedPos = 8 - it.bitPos
+            val normalizedPos = LAST_BIT_POSITION - it.bitPos
             if (it.isSparkIgnition == null) {
-                val isAvailable = values[1].getBitAt(normalizedPos, 8) == 1
-                val isComplete = values[1].getBitAt(normalizedPos - 4, 8) == 0
+                val isAvailable = values[DATA_BYTE_1].getBitAt(normalizedPos, LAST_BIT_POSITION) == BIT_SET
+                val isComplete =
+                    values[DATA_BYTE_1].getBitAt(
+                        normalizedPos - COMMON_MONITOR_COMPLETION_OFFSET,
+                        LAST_BIT_POSITION,
+                    ) == 0
                 monitorMap[it] = SensorStatus(isAvailable, isComplete)
             } else if (it.isSparkIgnition == isSpark) {
-                val isAvailable = values[2].getBitAt(normalizedPos, 8) == 1
-                val isComplete = values[3].getBitAt(normalizedPos, 8) == 0
+                val isAvailable = values[DATA_BYTE_2].getBitAt(normalizedPos, LAST_BIT_POSITION) == BIT_SET
+                val isComplete = values[DATA_BYTE_3].getBitAt(normalizedPos, LAST_BIT_POSITION) != BIT_SET
                 monitorMap[it] = SensorStatus(isAvailable, isComplete)
             }
         }

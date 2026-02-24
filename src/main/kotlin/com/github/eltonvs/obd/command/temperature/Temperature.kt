@@ -4,7 +4,14 @@ import com.github.eltonvs.obd.command.ObdCommand
 import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.bytesToInt
 
-private fun calculateTemperature(rawValue: IntArray): Float = bytesToInt(rawValue, bytesToProcess = 1) - 40f
+private const val SINGLE_BYTE = 1
+private const val CELSIUS_OFFSET = 40f
+
+private fun calculateTemperature(rawValue: IntArray): Float =
+    bytesToInt(
+        rawValue,
+        bytesToProcess = SINGLE_BYTE,
+    ) - CELSIUS_OFFSET
 
 class AirIntakeTemperatureCommand : ObdCommand() {
     override val tag = "AIR_INTAKE_TEMPERATURE"
@@ -13,7 +20,7 @@ class AirIntakeTemperatureCommand : ObdCommand() {
     override val pid = "0F"
 
     override val defaultUnit = "°C"
-    override val handler = { it: ObdRawResponse -> "%.1f".format(calculateTemperature(it.bufferedValue)) }
+    override val handler = { response: ObdRawResponse -> "%.1f".format(calculateTemperature(response.bufferedValue)) }
 }
 
 class AmbientAirTemperatureCommand : ObdCommand() {
@@ -23,7 +30,7 @@ class AmbientAirTemperatureCommand : ObdCommand() {
     override val pid = "46"
 
     override val defaultUnit = "°C"
-    override val handler = { it: ObdRawResponse -> "%.1f".format(calculateTemperature(it.bufferedValue)) }
+    override val handler = { response: ObdRawResponse -> "%.1f".format(calculateTemperature(response.bufferedValue)) }
 }
 
 class EngineCoolantTemperatureCommand : ObdCommand() {
@@ -33,7 +40,7 @@ class EngineCoolantTemperatureCommand : ObdCommand() {
     override val pid = "05"
 
     override val defaultUnit = "°C"
-    override val handler = { it: ObdRawResponse -> "%.1f".format(calculateTemperature(it.bufferedValue)) }
+    override val handler = { response: ObdRawResponse -> "%.1f".format(calculateTemperature(response.bufferedValue)) }
 }
 
 class OilTemperatureCommand : ObdCommand() {
@@ -43,5 +50,5 @@ class OilTemperatureCommand : ObdCommand() {
     override val pid = "5C"
 
     override val defaultUnit = "°C"
-    override val handler = { it: ObdRawResponse -> "%.1f".format(calculateTemperature(it.bufferedValue)) }
+    override val handler = { response: ObdRawResponse -> "%.1f".format(calculateTemperature(response.bufferedValue)) }
 }

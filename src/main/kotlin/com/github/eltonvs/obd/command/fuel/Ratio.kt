@@ -4,7 +4,12 @@ import com.github.eltonvs.obd.command.ObdCommand
 import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.bytesToInt
 
-private fun calculateFuelAirRatio(rawValue: IntArray): Float = bytesToInt(rawValue, bytesToProcess = 2) * (2 / 65_536f)
+private const val RATIO_BYTES_TO_PROCESS = 2
+private const val RATIO_SCALE = 2f
+private const val RATIO_DIVISOR = 65_536f
+
+private fun calculateFuelAirRatio(rawValue: IntArray): Float =
+    bytesToInt(rawValue, bytesToProcess = RATIO_BYTES_TO_PROCESS) * (RATIO_SCALE / RATIO_DIVISOR)
 
 class CommandedEquivalenceRatioCommand : ObdCommand() {
     override val tag = "COMMANDED_EQUIVALENCE_RATIO"
@@ -13,7 +18,7 @@ class CommandedEquivalenceRatioCommand : ObdCommand() {
     override val pid = "44"
 
     override val defaultUnit = "F/A"
-    override val handler = { it: ObdRawResponse -> "%.2f".format(calculateFuelAirRatio(it.bufferedValue)) }
+    override val handler = { response: ObdRawResponse -> "%.2f".format(calculateFuelAirRatio(response.bufferedValue)) }
 }
 
 class FuelAirEquivalenceRatioCommand(
@@ -25,7 +30,7 @@ class FuelAirEquivalenceRatioCommand(
     override val pid = oxygenSensor.pid
 
     override val defaultUnit = "F/A"
-    override val handler = { it: ObdRawResponse -> "%.2f".format(calculateFuelAirRatio(it.bufferedValue)) }
+    override val handler = { response: ObdRawResponse -> "%.2f".format(calculateFuelAirRatio(response.bufferedValue)) }
 
     enum class OxygenSensor(
         val displayName: String,

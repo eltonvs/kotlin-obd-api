@@ -9,6 +9,18 @@ import com.github.eltonvs.obd.command.bytesToInt
 import com.github.eltonvs.obd.command.removeAll
 import java.util.regex.Pattern
 
+private const val STATUS_BYTE_INDEX = 2
+private const val DTC_COUNT_MASK = 0x7F
+private const val CAN_ONE_FRAME_MAX_LENGTH = 16
+private const val DTC_HEX_CHUNK_SIZE = 4
+private const val CAN_ONE_FRAME_HEADER_SIZE = 4
+private const val CAN_MULTI_FRAME_HEADER_SIZE = 7
+private const val DTC_TYPE_SHIFT = 2
+private const val DTC_TYPE_MASK = 0b11
+private const val DTC_CODE_MASK = 0b11
+private const val PAD_DTC_LENGTH = 5
+private const val PAD_DTC_CHAR = '0'
+
 class DTCNumberCommand : ObdCommand() {
     override val tag = "DTC_NUMBER"
     override val name = "Diagnostic Trouble Codes Number"
@@ -16,9 +28,9 @@ class DTCNumberCommand : ObdCommand() {
     override val pid = "01"
 
     override val defaultUnit = " codes"
-    override val handler = { it: ObdRawResponse ->
-        val mil = it.bufferedValue[2]
-        val codeCount = mil and 0x7F
+    override val handler = { response: ObdRawResponse ->
+        val mil = response.bufferedValue[STATUS_BYTE_INDEX]
+        val codeCount = mil and DTC_COUNT_MASK
         codeCount.toString()
     }
 }
@@ -30,7 +42,7 @@ class DistanceSinceCodesClearedCommand : ObdCommand() {
     override val pid = "31"
 
     override val defaultUnit = "Km"
-    override val handler = { it: ObdRawResponse -> bytesToInt(it.bufferedValue).toString() }
+    override val handler = { response: ObdRawResponse -> bytesToInt(response.bufferedValue).toString() }
 }
 
 class TimeSinceCodesClearedCommand : ObdCommand() {
@@ -40,7 +52,7 @@ class TimeSinceCodesClearedCommand : ObdCommand() {
     override val pid = "4E"
 
     override val defaultUnit = "min"
-    override val handler = { it: ObdRawResponse -> bytesToInt(it.bufferedValue).toString() }
+    override val handler = { response: ObdRawResponse -> bytesToInt(response.bufferedValue).toString() }
 }
 
 class ResetTroubleCodesCommand : ObdCommand() {
@@ -53,7 +65,9 @@ class ResetTroubleCodesCommand : ObdCommand() {
 abstract class BaseTroubleCodesCommand : ObdCommand() {
     override val pid = ""
 
-    override val handler = { it: ObdRawResponse -> parseTroubleCodesList(it.value).joinToString(separator = ",") }
+    override val handler = { response: ObdRawResponse ->
+        parseTroubleCodesList(response.value).joinToString(separator = ",")
+    }
 
     abstract val carriageNumberPattern: Pattern
 
@@ -62,20 +76,27 @@ abstract class BaseTroubleCodesCommand : ObdCommand() {
 
     private fun parseTroubleCodesList(rawValue: String): List<String> {
         val canOneFrame: String = removeAll(rawValue, CARRIAGE_PATTERN, WHITESPACE_PATTERN)
-        val canOneFrameLength: Int = canOneFrame.length
+        val canOneFrameLength = canOneFrame.length
 
         val workingData =
             when {
                 /* CAN(ISO-15765) protocol one frame: 43yy[codes]
                    Header is 43yy, yy showing the number of data items. */
-                (canOneFrameLength <= 16) and (canOneFrameLength % 4 == 0) -> canOneFrame.drop(4)
+                (canOneFrameLength <= CAN_ONE_FRAME_MAX_LENGTH) and
+                    (canOneFrameLength % DTC_HEX_CHUNK_SIZE == 0) -> {
+                    canOneFrame.drop(CAN_ONE_FRAME_HEADER_SIZE)
+                }
 
                 /* CAN(ISO-15765) protocol two and more frames: xxx43yy[codes]
                    Header is xxx43yy, xxx is bytes of information to follow, yy showing the number of data items. */
-                rawValue.contains(":") -> removeAll(CARRIAGE_COLON_PATTERN, rawValue).drop(7)
+                rawValue.contains(":") -> {
+                    removeAll(CARRIAGE_COLON_PATTERN, rawValue).drop(CAN_MULTI_FRAME_HEADER_SIZE)
+                }
 
                 // ISO9141-2, KWP2000 Fast and KWP2000 5Kbps (ISO15031) protocols.
-                else -> removeAll(rawValue, carriageNumberPattern, WHITESPACE_PATTERN)
+                else -> {
+                    removeAll(rawValue, carriageNumberPattern, WHITESPACE_PATTERN)
+                }
             }
 
         /* For each chunk of 4 chars:
@@ -86,11 +107,11 @@ abstract class BaseTroubleCodesCommand : ObdCommand() {
                 | / /
            DTC: P0100 */
         val troubleCodesList =
-            workingData.chunked(4) {
+            workingData.chunked(DTC_HEX_CHUNK_SIZE) {
                 val b1 = it.first().toString().toInt(radix = 16)
-                val ch1 = (b1 shr 2) and 0b11
-                val ch2 = b1 and 0b11
-                "${DTC_LETTERS[ch1]}${HEX_ARRAY[ch2]}${it.drop(1)}".padEnd(5, '0')
+                val ch1 = (b1 shr DTC_TYPE_SHIFT) and DTC_TYPE_MASK
+                val ch2 = b1 and DTC_CODE_MASK
+                "${DTC_LETTERS[ch1]}${HEX_ARRAY[ch2]}${it.drop(1)}".padEnd(PAD_DTC_LENGTH, PAD_DTC_CHAR)
             }
 
         val idx = troubleCodesList.indexOf("P0000")

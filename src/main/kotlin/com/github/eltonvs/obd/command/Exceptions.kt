@@ -62,7 +62,9 @@ abstract class BadResponseException(
             }
     }
 
-    override fun toString(): String = "${this.javaClass.simpleName} while executing command [${command.tag}], response [${response.value}]"
+    override fun toString(): String =
+        "${this.javaClass.simpleName} while executing command [${command.tag}], " +
+            "response [${response.value}]"
 }
 
 private typealias BRE = BadResponseException

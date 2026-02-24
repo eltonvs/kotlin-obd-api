@@ -6,6 +6,132 @@ import org.junit.runners.Parameterized
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+private val AVAILABLE_PIDS_01_TO_20_VALUES =
+    listOf(
+        // Renault Sandero 2014
+        arrayOf<Any>(
+            "BE3EB811",
+            intArrayOf(
+                0x1,
+                0x3,
+                0x4,
+                0x5,
+                0x6,
+                0x7,
+                0xb,
+                0xc,
+                0xd,
+                0xe,
+                0xf,
+                0x11,
+                0x13,
+                0x14,
+                0x15,
+                0x1c,
+                0x20,
+            ),
+        ),
+        // Chevrolet Onix 2015
+        arrayOf<Any>(
+            "BE3FB813",
+            intArrayOf(
+                0x1,
+                0x3,
+                0x4,
+                0x5,
+                0x6,
+                0x7,
+                0xb,
+                0xc,
+                0xd,
+                0xe,
+                0xf,
+                0x10,
+                0x11,
+                0x13,
+                0x14,
+                0x15,
+                0x1c,
+                0x1f,
+                0x20,
+            ),
+        ),
+        // Toyota Corolla 2015
+        arrayOf<Any>(
+            "BE1FA813",
+            intArrayOf(
+                0x1,
+                0x3,
+                0x4,
+                0x5,
+                0x6,
+                0x7,
+                0xc,
+                0xd,
+                0xe,
+                0xf,
+                0x10,
+                0x11,
+                0x13,
+                0x15,
+                0x1c,
+                0x1f,
+                0x20,
+            ),
+        ),
+        // Fiat Siena 2011
+        arrayOf<Any>(
+            "BE3EB811",
+            intArrayOf(
+                0x1,
+                0x3,
+                0x4,
+                0x5,
+                0x6,
+                0x7,
+                0xb,
+                0xc,
+                0xd,
+                0xe,
+                0xf,
+                0x11,
+                0x13,
+                0x14,
+                0x15,
+                0x1c,
+                0x20,
+            ),
+        ),
+        // VW Gol 2014
+        arrayOf<Any>(
+            "BE3EB813",
+            intArrayOf(
+                0x1,
+                0x3,
+                0x4,
+                0x5,
+                0x6,
+                0x7,
+                0xb,
+                0xc,
+                0xd,
+                0xe,
+                0xf,
+                0x11,
+                0x13,
+                0x14,
+                0x15,
+                0x1c,
+                0x1f,
+                0x20,
+            ),
+        ),
+        // Empty
+        arrayOf<Any>("00000000", intArrayOf()),
+        // Complete
+        arrayOf<Any>("FFFFFFFF", (0x1..0x20).toList().toIntArray()),
+    )
+
 @RunWith(Parameterized::class)
 class AvailablePIDsCommand01to20ParameterizedTests(
     private val rawValue: String,
@@ -14,77 +140,7 @@ class AvailablePIDsCommand01to20ParameterizedTests(
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun values() =
-            listOf(
-                // Renault Sandero 2014
-                arrayOf<Any>(
-                    "BE3EB811",
-                    intArrayOf(0x1, 0x3, 0x4, 0x5, 0x6, 0x7, 0xb, 0xc, 0xd, 0xe, 0xf, 0x11, 0x13, 0x14, 0x15, 0x1c, 0x20),
-                ),
-                // Chevrolet Onix 2015
-                arrayOf<Any>(
-                    "BE3FB813",
-                    intArrayOf(
-                        0x1,
-                        0x3,
-                        0x4,
-                        0x5,
-                        0x6,
-                        0x7,
-                        0xb,
-                        0xc,
-                        0xd,
-                        0xe,
-                        0xf,
-                        0x10,
-                        0x11,
-                        0x13,
-                        0x14,
-                        0x15,
-                        0x1c,
-                        0x1f,
-                        0x20,
-                    ),
-                ),
-                // Toyota Corolla 2015
-                arrayOf<Any>(
-                    "BE1FA813",
-                    intArrayOf(0x1, 0x3, 0x4, 0x5, 0x6, 0x7, 0xc, 0xd, 0xe, 0xf, 0x10, 0x11, 0x13, 0x15, 0x1c, 0x1f, 0x20),
-                ),
-                // Fiat Siena 2011
-                arrayOf<Any>(
-                    "BE3EB811",
-                    intArrayOf(0x1, 0x3, 0x4, 0x5, 0x6, 0x7, 0xb, 0xc, 0xd, 0xe, 0xf, 0x11, 0x13, 0x14, 0x15, 0x1c, 0x20),
-                ),
-                // VW Gol 2014
-                arrayOf<Any>(
-                    "BE3EB813",
-                    intArrayOf(
-                        0x1,
-                        0x3,
-                        0x4,
-                        0x5,
-                        0x6,
-                        0x7,
-                        0xb,
-                        0xc,
-                        0xd,
-                        0xe,
-                        0xf,
-                        0x11,
-                        0x13,
-                        0x14,
-                        0x15,
-                        0x1c,
-                        0x1f,
-                        0x20,
-                    ),
-                ),
-                // Empty
-                arrayOf<Any>("00000000", intArrayOf()),
-                // Complete
-                arrayOf<Any>("FFFFFFFF", (0x1..0x20).toList().toIntArray()),
-            )
+        fun values() = AVAILABLE_PIDS_01_TO_20_VALUES
     }
 
     @Test
@@ -111,13 +167,22 @@ class AvailablePIDsCommand21to40ParameterizedTests(
                 // Renault Sandero 2014
                 arrayOf<Any>("80018001", intArrayOf(0x21, 0x30, 0x31, 0x40)),
                 // Chevrolet Onix 2015
-                arrayOf<Any>("8007A011", intArrayOf(0x21, 0x2e, 0x2f, 0x30, 0x31, 0x33, 0x3c, 0x40)),
+                arrayOf<Any>(
+                    "8007A011",
+                    intArrayOf(0x21, 0x2e, 0x2f, 0x30, 0x31, 0x33, 0x3c, 0x40),
+                ),
                 // Toyota Corolla 2015
-                arrayOf<Any>("9005B015", intArrayOf(0x21, 0x24, 0x2e, 0x30, 0x31, 0x33, 0x34, 0x3c, 0x3e, 0x40)),
+                arrayOf<Any>(
+                    "9005B015",
+                    intArrayOf(0x21, 0x24, 0x2e, 0x30, 0x31, 0x33, 0x34, 0x3c, 0x3e, 0x40),
+                ),
                 // Fiat Siena 2011
                 arrayOf<Any>("80000000", intArrayOf(0x21)),
                 // VW Gol 2014
-                arrayOf<Any>("8007A011", intArrayOf(0x21, 0x2e, 0x2f, 0x30, 0x31, 0x33, 0x3c, 0x40)),
+                arrayOf<Any>(
+                    "8007A011",
+                    intArrayOf(0x21, 0x2e, 0x2f, 0x30, 0x31, 0x33, 0x3c, 0x40),
+                ),
                 // Empty
                 arrayOf<Any>("00000000", intArrayOf()),
                 // Complete
@@ -149,9 +214,15 @@ class AvailablePIDsCommand41to60ParameterizedTests(
                 // Renault Sandero 2014
                 arrayOf<Any>("80000000", intArrayOf(0x41)),
                 // Chevrolet Onix 2015
-                arrayOf<Any>("FED0C000", intArrayOf(0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x49, 0x4a, 0x4c, 0x51, 0x52)),
+                arrayOf<Any>(
+                    "FED0C000",
+                    intArrayOf(0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x49, 0x4a, 0x4c, 0x51, 0x52),
+                ),
                 // Toyota Corolla 2015
-                arrayOf<Any>("7ADC8001", intArrayOf(0x42, 0x43, 0x44, 0x45, 0x47, 0x49, 0x4a, 0x4c, 0x4d, 0x4e, 0x51, 0x60)),
+                arrayOf<Any>(
+                    "7ADC8001",
+                    intArrayOf(0x42, 0x43, 0x44, 0x45, 0x47, 0x49, 0x4a, 0x4c, 0x4d, 0x4e, 0x51, 0x60),
+                ),
                 // VW Gol 2014
                 arrayOf<Any>(
                     "FED14400",
