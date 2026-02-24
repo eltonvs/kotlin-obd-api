@@ -6,8 +6,7 @@
 
 [![GitHub release](https://img.shields.io/github/v/release/eltonvs/kotlin-obd-api)](https://github.com/eltonvs/kotlin-obd-api/releases)
 [![CI Status](https://github.com/eltonvs/kotlin-obd-api/actions/workflows/ci.yml/badge.svg)](https://github.com/eltonvs/kotlin-obd-api/actions/workflows/ci.yml)
-[![Maintainability](https://api.codeclimate.com/v1/badges/e70f6ab78bdae20de178/maintainability)](https://codeclimate.com/github/eltonvs/kotlin-obd-api/maintainability)
-[![codebeat badge](https://codebeat.co/badges/6af3e4ad-1171-4868-871f-9e5e6be63df9)](https://codebeat.co/projects/github-com-eltonvs-kotlin-obd-api-master)
+[![Maintainability](https://qlty.sh/gh/eltonvs/projects/kotlin-obd-api/maintainability.svg)](https://qlty.sh/gh/eltonvs/projects/kotlin-obd-api)
 [![GitHub license](https://img.shields.io/github/license/eltonvs/kotlin-obd-api)](https://github.com/eltonvs/kotlin-obd-api/blob/master/LICENSE)
 [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 
