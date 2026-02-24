@@ -19,7 +19,7 @@ class DTCNumberCommand : ObdCommand() {
     override val defaultUnit = " codes"
     override val handler = { it: ObdRawResponse ->
         val mil = it.bufferedValue[2]
-        val codeCount = mil and 0x7F
+        val codeCount = mil.toInt() and 0x7F
         codeCount.toString()
     }
 }
@@ -54,47 +54,50 @@ class ResetTroubleCodesCommand : ObdCommand() {
 abstract class BaseTroubleCodesCommand : ObdCommand() {
     override val pid = ""
 
-    override val handler = { it: ObdRawResponse -> parseTroubleCodesList(it.value).joinToString(separator = ",") }
+    override val handler =
+        { it: ObdRawResponse -> parseTroubleCodesList(it.value).joinToString(separator = ",") }
 
     abstract val carriageNumberPattern: Pattern
 
-    var troubleCodesList = listOf<String>()
-        private set
+    var troubleCodesList = mutableListOf<String>()
 
     private fun parseTroubleCodesList(rawValue: String): List<String> {
-        val canOneFrame: String = removeAll(rawValue, CARRIAGE_PATTERN, WHITESPACE_PATTERN)
+        if (rawValue.isBlank()) {
+            return emptyList()
+        }
+        val rawValueN = rawValue.replace("[\\s:]".toRegex(), "")
+
+        val canOneFrame: String = removeAll(rawValueN, CARRIAGE_PATTERN, WHITESPACE_PATTERN)
         val canOneFrameLength: Int = canOneFrame.length
 
-        val workingData =
-            when {
-                /* CAN(ISO-15765) protocol one frame: 43yy[codes]
-                   Header is 43yy, yy showing the number of data items. */
-                (canOneFrameLength <= 16) and (canOneFrameLength % 4 == 0) -> canOneFrame.drop(4)
-                /* CAN(ISO-15765) protocol two and more frames: xxx43yy[codes]
-                   Header is xxx43yy, xxx is bytes of information to follow, yy showing the number of data items. */
-                rawValue.contains(":") -> removeAll(CARRIAGE_COLON_PATTERN, rawValue).drop(7)
-                // ISO9141-2, KWP2000 Fast and KWP2000 5Kbps (ISO15031) protocols.
-                else -> removeAll(rawValue, carriageNumberPattern, WHITESPACE_PATTERN)
-            }
+        val workingData = when {
+            (canOneFrameLength <= 16) && (canOneFrameLength % 4 == 0) -> canOneFrame.drop(4)
+            rawValueN.contains(":") -> removeAll(CARRIAGE_COLON_PATTERN, rawValueN).drop(7)
+            else -> removeAll(rawValueN, carriageNumberPattern, WHITESPACE_PATTERN)
+        }
 
         /* For each chunk of 4 chars:
-           it:  "0100"
-           HEX: 0   1    0   0
-           BIN: 00000001 00000000
-                [][][    hex    ]
-                | / /
+                it:  "0100"
+                HEX: 0   1    0   0
+                BIN: 00000001 00000000
+                        [][][    hex    ]
+                        | / /
            DTC: P0100 */
-        val troubleCodesList = workingData.chunked(4) {
-            val b1 = it.first().toString().toInt(radix = 16)
+        val troubleCodesList = mutableListOf<String>()
+        for (chunk in workingData.chunked(4)) {
+            val b1 = chunk.first().toString().toInt(radix = 16)
             val ch1 = (b1 shr 2) and 0b11
             val ch2 = b1 and 0b11
-            "${DTC_LETTERS[ch1]}${HEX_ARRAY[ch2]}${it.drop(1)}".padEnd(5, '0')
+            val troubleCode = "${DTC_LETTERS[ch1]}${HEX_ARRAY[ch2]}${chunk.drop(1)}".padEnd(5, '0')
+
+            if (troubleCode == "P0000") {
+                break // Stop adding trouble codes once we encounter "P0000"
+            }
+
+            troubleCodesList.add(troubleCode)
         }
 
-        val idx = troubleCodesList.indexOf("P0000")
-        return (if (idx < 0) troubleCodesList else troubleCodesList.take(idx)).also {
-            this.troubleCodesList = it
-        }
+        return troubleCodesList
     }
 
     protected companion object {
