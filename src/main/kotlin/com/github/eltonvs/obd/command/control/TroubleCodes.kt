@@ -9,7 +9,6 @@ import com.github.eltonvs.obd.command.bytesToInt
 import com.github.eltonvs.obd.command.removeAll
 import java.util.regex.Pattern
 
-
 class DTCNumberCommand : ObdCommand() {
     override val tag = "DTC_NUMBER"
     override val name = "Diagnostic Trouble Codes Number"
@@ -70,9 +69,11 @@ abstract class BaseTroubleCodesCommand : ObdCommand() {
                 /* CAN(ISO-15765) protocol one frame: 43yy[codes]
                    Header is 43yy, yy showing the number of data items. */
                 (canOneFrameLength <= 16) and (canOneFrameLength % 4 == 0) -> canOneFrame.drop(4)
+
                 /* CAN(ISO-15765) protocol two and more frames: xxx43yy[codes]
                    Header is xxx43yy, xxx is bytes of information to follow, yy showing the number of data items. */
                 rawValue.contains(":") -> removeAll(CARRIAGE_COLON_PATTERN, rawValue).drop(7)
+
                 // ISO9141-2, KWP2000 Fast and KWP2000 5Kbps (ISO15031) protocols.
                 else -> removeAll(rawValue, carriageNumberPattern, WHITESPACE_PATTERN)
             }
@@ -84,12 +85,13 @@ abstract class BaseTroubleCodesCommand : ObdCommand() {
                 [][][    hex    ]
                 | / /
            DTC: P0100 */
-        val troubleCodesList = workingData.chunked(4) {
-            val b1 = it.first().toString().toInt(radix = 16)
-            val ch1 = (b1 shr 2) and 0b11
-            val ch2 = b1 and 0b11
-            "${DTC_LETTERS[ch1]}${HEX_ARRAY[ch2]}${it.drop(1)}".padEnd(5, '0')
-        }
+        val troubleCodesList =
+            workingData.chunked(4) {
+                val b1 = it.first().toString().toInt(radix = 16)
+                val ch1 = (b1 shr 2) and 0b11
+                val ch2 = b1 and 0b11
+                "${DTC_LETTERS[ch1]}${HEX_ARRAY[ch2]}${it.drop(1)}".padEnd(5, '0')
+            }
 
         val idx = troubleCodesList.indexOf("P0000")
         return (if (idx < 0) troubleCodesList else troubleCodesList.take(idx)).also {

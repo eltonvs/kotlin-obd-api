@@ -8,7 +8,6 @@ import com.github.eltonvs.obd.command.RegexPatterns.WHITESPACE_PATTERN
 import com.github.eltonvs.obd.command.bytesToInt
 import com.github.eltonvs.obd.command.removeAll
 
-
 class ModuleVoltageCommand : ObdCommand() {
     override val tag = "CONTROL_MODULE_VOLTAGE"
     override val name = "Control Module Power Supply"
@@ -56,6 +55,5 @@ class VINCommand : ObdCommand() {
         return convertHexToString(workingData).replace("[\u0000-\u001f]".toRegex(), "")
     }
 
-    private fun convertHexToString(hex: String): String =
-        hex.chunked(2) { Integer.parseInt(it.toString(), 16).toChar() }.joinToString("")
+    private fun convertHexToString(hex: String): String = hex.chunked(2) { Integer.parseInt(it.toString(), 16).toChar() }.joinToString("")
 }

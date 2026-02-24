@@ -5,7 +5,6 @@ import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.bytesToInt
 import com.github.eltonvs.obd.command.calculatePercentage
 
-
 class SpeedCommand : ObdCommand() {
     override val tag = "SPEED"
     override val name = "Vehicle Speed"

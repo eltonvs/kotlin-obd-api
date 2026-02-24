@@ -5,12 +5,16 @@ import com.github.eltonvs.obd.command.ObdCommand
 import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.getBitAt
 
-data class SensorStatus(val available: Boolean, val complete: Boolean)
+data class SensorStatus(
+    val available: Boolean,
+    val complete: Boolean,
+)
+
 data class SensorStatusData(
     val milOn: Boolean,
     val dtcCount: Int,
     val isSpark: Boolean,
-    val items: Map<Monitors, SensorStatus>
+    val items: Map<Monitors, SensorStatus>,
 )
 
 abstract class BaseMonitorStatus : ObdCommand() {
@@ -35,7 +39,7 @@ abstract class BaseMonitorStatus : ObdCommand() {
      * ┌MIL      ||||||┌Misfire supported
      * |         |||||||
      * 10000011 00000111 11111111 00000000
-     *  [# DTC] X        [supprt] [~ready]
+     *  [# DTC] X [supprt] [~ready]
      */
     private fun parseData(values: List<Int>) {
         if (values.size != 4) {
