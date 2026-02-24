@@ -5,15 +5,18 @@ import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.ObdResponse
 import com.github.eltonvs.obd.command.bytesToInt
 
+private const val MIL_BYTE_INDEX = 2
+private const val MIL_ON_MASK = 0x80
+
 class MILOnCommand : ObdCommand() {
     override val tag = "MIL_ON"
     override val name = "MIL on"
     override val mode = "01"
     override val pid = "01"
 
-    override val handler = { it: ObdRawResponse ->
-        val mil = it.bufferedValue[2]
-        val milOn = (mil and 0x80) == 128
+    override val handler = { response: ObdRawResponse ->
+        val mil = response.bufferedValue[MIL_BYTE_INDEX]
+        val milOn = (mil and MIL_ON_MASK) == MIL_ON_MASK
         milOn.toString()
     }
 
@@ -30,7 +33,7 @@ class DistanceMILOnCommand : ObdCommand() {
     override val pid = "21"
 
     override val defaultUnit = "Km"
-    override val handler = { it: ObdRawResponse -> bytesToInt(it.bufferedValue).toString() }
+    override val handler = { response: ObdRawResponse -> bytesToInt(response.bufferedValue).toString() }
 }
 
 class TimeSinceMILOnCommand : ObdCommand() {
@@ -40,5 +43,5 @@ class TimeSinceMILOnCommand : ObdCommand() {
     override val pid = "4D"
 
     override val defaultUnit = "min"
-    override val handler = { it: ObdRawResponse -> bytesToInt(it.bufferedValue).toString() }
+    override val handler = { response: ObdRawResponse -> bytesToInt(response.bufferedValue).toString() }
 }

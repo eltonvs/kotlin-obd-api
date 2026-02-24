@@ -5,6 +5,10 @@ import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.bytesToInt
 import com.github.eltonvs.obd.command.calculatePercentage
 
+private const val SINGLE_BYTE = 1
+private const val HUNDRED_PERCENT = 100f
+private const val HALF_SCALE = 128f
+
 class CommandedEgrCommand : ObdCommand() {
     override val tag = "COMMANDED_EGR"
     override val name = "Commanded EGR"
@@ -12,7 +16,9 @@ class CommandedEgrCommand : ObdCommand() {
     override val pid = "2C"
 
     override val defaultUnit = "%"
-    override val handler = { it: ObdRawResponse -> "%.1f".format(calculatePercentage(it.bufferedValue, bytesToProcess = 1)) }
+    override val handler = { response: ObdRawResponse ->
+        "%.1f".format(calculatePercentage(response.bufferedValue, bytesToProcess = SINGLE_BYTE))
+    }
 }
 
 class EgrErrorCommand : ObdCommand() {
@@ -22,5 +28,11 @@ class EgrErrorCommand : ObdCommand() {
     override val pid = "2D"
 
     override val defaultUnit = "%"
-    override val handler = { it: ObdRawResponse -> "%.1f".format(bytesToInt(it.bufferedValue, bytesToProcess = 1) * (100f / 128) - 100) }
+    override val handler = { response: ObdRawResponse ->
+        val value = bytesToInt(response.bufferedValue, bytesToProcess = SINGLE_BYTE)
+        val normalized = value * (HUNDRED_PERCENT / HALF_SCALE) - HUNDRED_PERCENT
+        "%.1f".format(
+            normalized,
+        )
+    }
 }

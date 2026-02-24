@@ -5,6 +5,8 @@ import com.github.eltonvs.obd.command.AdaptiveTimingMode
 import com.github.eltonvs.obd.command.ObdProtocols
 import com.github.eltonvs.obd.command.Switcher
 
+private const val TIMEOUT_MASK = 0xFF
+
 class SelectProtocolCommand(
     protocol: ObdProtocols,
 ) : ATCommand() {
@@ -59,5 +61,5 @@ class SetTimeoutCommand(
 ) : ATCommand() {
     override val tag = "SET_TIMEOUT"
     override val name = "Set Timeout - $timeout"
-    override val pid = "ST ${Integer.toHexString(0xFF and timeout)}"
+    override val pid = "ST ${Integer.toHexString(TIMEOUT_MASK and timeout)}"
 }

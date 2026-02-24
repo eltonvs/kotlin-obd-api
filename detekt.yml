@@ -1,17 +1,2 @@
-complexity:
-  CyclomaticComplexMethod:
-    active: false
-  LongMethod:
-    active: false
-
-naming:
-  MatchingDeclarationName:
-    active: false
-
-style:
-  ExplicitItLambdaParameter:
-    active: false
-  MagicNumber:
-    active: false
-  MaxLineLength:
-    active: false
+# Project detekt overrides.
+# Intentionally minimal to keep default detekt rules enabled.

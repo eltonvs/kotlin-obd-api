@@ -15,7 +15,7 @@ class DescribeProtocolNumberCommand : ATCommand() {
     override val name = "Describe Protocol Number"
     override val pid = "DPN"
 
-    override val handler = { it: ObdRawResponse -> parseProtocolNumber(it).displayName }
+    override val handler = { response: ObdRawResponse -> parseProtocolNumber(response).displayName }
 
     private fun parseProtocolNumber(rawResponse: ObdRawResponse): ObdProtocols {
         val result = rawResponse.value
@@ -30,7 +30,7 @@ class IgnitionMonitorCommand : ATCommand() {
     override val name = "Ignition Monitor"
     override val pid = "IGN"
 
-    override val handler = { it: ObdRawResponse -> it.value.trim().uppercase() }
+    override val handler = { response: ObdRawResponse -> response.value.trim().uppercase() }
 }
 
 class AdapterVoltageCommand : ATCommand() {

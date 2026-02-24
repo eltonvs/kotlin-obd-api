@@ -15,6 +15,8 @@ import java.io.InputStream
 import java.io.OutputStream
 import kotlin.system.measureTimeMillis
 
+private const val READ_RETRY_DELAY_MS = 500L
+
 class ObdDeviceConnection
     @JvmOverloads
     constructor(
@@ -98,7 +100,7 @@ class ObdDeviceConnection
                             isReading = false
                         } else {
                             retriesCount += 1
-                            delay(500)
+                            delay(READ_RETRY_DELAY_MS)
                         }
                     }
                 }

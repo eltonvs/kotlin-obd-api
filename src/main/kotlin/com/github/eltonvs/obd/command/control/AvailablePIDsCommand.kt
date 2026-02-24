@@ -4,6 +4,8 @@ import com.github.eltonvs.obd.command.ObdCommand
 import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.getBitAt
 
+private const val PID_RANGE_SIZE = 33
+
 class AvailablePIDsCommand(
     private val range: AvailablePIDsRanges,
 ) : ObdCommand() {
@@ -13,14 +15,14 @@ class AvailablePIDsCommand(
     override val pid = range.pid
 
     override val defaultUnit = ""
-    override val handler = { it: ObdRawResponse ->
-        parsePIDs(it.processedValue).joinToString(",") { "%02X".format(it) }
+    override val handler = { response: ObdRawResponse ->
+        parsePIDs(response.processedValue).joinToString(",") { "%02X".format(it) }
     }
 
     private fun parsePIDs(rawValue: String): IntArray {
         val value = rawValue.toLong(radix = 16)
         val initialPID = range.pid.toInt(radix = 16)
-        return (1..33).fold(intArrayOf()) { acc, i ->
+        return (1..PID_RANGE_SIZE).fold(intArrayOf()) { acc, i ->
             if (value.getBitAt(i) == 1) acc.plus(i + initialPID) else acc
         }
     }

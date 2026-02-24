@@ -8,6 +8,13 @@ import com.github.eltonvs.obd.command.RegexPatterns.WHITESPACE_PATTERN
 import com.github.eltonvs.obd.command.bytesToInt
 import com.github.eltonvs.obd.command.removeAll
 
+private const val MODULE_VOLTAGE_DIVISOR = 1000f
+private const val TIMING_ADVANCE_DIVISOR = 2f
+private const val TIMING_ADVANCE_OFFSET = 64f
+private const val VIN_CAN_FRAME_PREFIX_LENGTH = 9
+private const val HEX_CHUNK_SIZE = 2
+private const val HEX_RADIX = 16
+
 class ModuleVoltageCommand : ObdCommand() {
     override val tag = "CONTROL_MODULE_VOLTAGE"
     override val name = "Control Module Power Supply"
@@ -15,7 +22,9 @@ class ModuleVoltageCommand : ObdCommand() {
     override val pid = "42"
 
     override val defaultUnit = "V"
-    override val handler = { it: ObdRawResponse -> "%.2f".format(bytesToInt(it.bufferedValue) / 1000f) }
+    override val handler = { response: ObdRawResponse ->
+        "%.2f".format(bytesToInt(response.bufferedValue) / MODULE_VOLTAGE_DIVISOR)
+    }
 }
 
 class TimingAdvanceCommand : ObdCommand() {
@@ -25,7 +34,11 @@ class TimingAdvanceCommand : ObdCommand() {
     override val pid = "0E"
 
     override val defaultUnit = "°"
-    override val handler = { it: ObdRawResponse -> "%.2f".format(bytesToInt(it.bufferedValue, bytesToProcess = 1) / 2f - 64) }
+    override val handler = { response: ObdRawResponse ->
+        "%.2f".format(
+            bytesToInt(response.bufferedValue, bytesToProcess = 1) / TIMING_ADVANCE_DIVISOR - TIMING_ADVANCE_OFFSET,
+        )
+    }
 }
 
 class VINCommand : ObdCommand() {
@@ -35,14 +48,16 @@ class VINCommand : ObdCommand() {
     override val pid = "02"
 
     override val defaultUnit = ""
-    override val handler = { it: ObdRawResponse -> parseVIN(removeAll(it.value, WHITESPACE_PATTERN, BUS_INIT_PATTERN)) }
+    override val handler = { response: ObdRawResponse ->
+        parseVIN(removeAll(response.value, WHITESPACE_PATTERN, BUS_INIT_PATTERN))
+    }
 
     private fun parseVIN(rawValue: String): String {
         val workingData =
             if (rawValue.contains(":")) {
                 // CAN(ISO-15765) protocol.
                 // 9 is xxx490201, xxx is bytes of information to follow.
-                val value = rawValue.replace(".:".toRegex(), "").substring(9)
+                val value = rawValue.replace(".:".toRegex(), "").substring(VIN_CAN_FRAME_PREFIX_LENGTH)
                 if (STARTS_WITH_ALPHANUM_PATTERN.matcher(convertHexToString(value)).find()) {
                     rawValue.replace("0:49", "").replace(".:".toRegex(), "")
                 } else {
@@ -55,5 +70,9 @@ class VINCommand : ObdCommand() {
         return convertHexToString(workingData).replace("[\u0000-\u001f]".toRegex(), "")
     }
 
-    private fun convertHexToString(hex: String): String = hex.chunked(2) { Integer.parseInt(it.toString(), 16).toChar() }.joinToString("")
+    private fun convertHexToString(hex: String): String =
+        hex
+            .chunked(HEX_CHUNK_SIZE) {
+                Integer.parseInt(it.toString(), HEX_RADIX).toChar()
+            }.joinToString("")
 }
