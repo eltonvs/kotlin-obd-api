@@ -35,7 +35,7 @@ repositories {
 }
 
 dependencies {
-  implementation("com.github.eltonvs:kotlin-obd-api:1.4.0")
+  implementation("com.github.eltonvs:kotlin-obd-api:1.4.1")
 }
 ```
 
@@ -49,7 +49,7 @@ repositories {
 
 dependencies {
   // Kotlin OBD API
-  implementation 'com.github.eltonvs:kotlin-obd-api:1.4.0'
+  implementation 'com.github.eltonvs:kotlin-obd-api:1.4.1'
 }
 ```
 
@@ -70,7 +70,7 @@ Add the dependency:
 <dependency>
   <groupId>com.github.eltonvs</groupId>
   <artifactId>kotlin-obd-api</artifactId>
-  <version>1.4.0</version>
+  <version>1.4.1</version>
 </dependency>
 ```
 
