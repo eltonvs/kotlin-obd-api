@@ -5,14 +5,11 @@ import org.gradle.api.tasks.testing.TestListener
 import org.gradle.api.tasks.testing.TestResult
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
-val publicationName = "kotlin-obd-api"
 
 plugins {
-    kotlin("jvm") version "2.3.10"
-    id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
-    id("dev.detekt") version "2.0.0-alpha.2"
+    alias(libs.plugins.multiplatform)
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.detekt)
     `maven-publish`
 }
 
@@ -23,11 +20,34 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
-    testImplementation(kotlin("test"))
-    testImplementation(kotlin("test-junit"))
+kotlin {
+    jvm()
+    iosArm64()
+    iosX64()
+    iosSimulatorArm64()
+    macosArm64()
+    macosX64()
+    linuxX64()
+    mingwX64()
+    js {
+        browser()
+        nodejs()
+    }
+    wasmJs {
+        browser()
+        nodejs()
+    }
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.io.core)
+        }
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutines.test)
+        }
+    }
 }
 
 ktlint {
@@ -40,17 +60,6 @@ detekt {
     allRules = false
     ignoreFailures = false
     config.setFrom(files("$rootDir/detekt.yml"))
-}
-
-kotlin {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_1_8)
-    }
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 tasks.withType<Test>().configureEach {
@@ -96,12 +105,10 @@ tasks.withType<Test>().configureEach {
 
 publishing {
     publications {
-        create<MavenPublication>("maven") {
+        withType<MavenPublication> {
             groupId = project.group.toString()
             artifactId = project.name
             version = project.version.toString()
-
-            from(components["java"])
         }
     }
 }
