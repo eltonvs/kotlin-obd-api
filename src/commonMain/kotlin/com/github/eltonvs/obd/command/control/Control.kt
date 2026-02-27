@@ -58,7 +58,7 @@ class VINCommand : ObdCommand() {
                 // CAN(ISO-15765) protocol.
                 // 9 is xxx490201, xxx is bytes of information to follow.
                 val value = rawValue.replace(".:".toRegex(), "").substring(VIN_CAN_FRAME_PREFIX_LENGTH)
-                if (STARTS_WITH_ALPHANUM_PATTERN.matcher(convertHexToString(value)).find()) {
+                if (STARTS_WITH_ALPHANUM_PATTERN.containsMatchIn(convertHexToString(value))) {
                     rawValue.replace("0:49", "").replace(".:".toRegex(), "")
                 } else {
                     value
@@ -73,6 +73,6 @@ class VINCommand : ObdCommand() {
     private fun convertHexToString(hex: String): String =
         hex
             .chunked(HEX_CHUNK_SIZE) {
-                Integer.parseInt(it.toString(), HEX_RADIX).toChar()
+                it.toString().toInt(HEX_RADIX).toChar()
             }.joinToString("")
 }

@@ -61,5 +61,5 @@ class SetTimeoutCommand(
 ) : ATCommand() {
     override val tag = "SET_TIMEOUT"
     override val name = "Set Timeout - $timeout"
-    override val pid = "ST ${Integer.toHexString(TIMEOUT_MASK and timeout)}"
+    override val pid = "ST ${(TIMEOUT_MASK and timeout).toString(16)}"
 }

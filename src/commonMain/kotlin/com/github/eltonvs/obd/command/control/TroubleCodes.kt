@@ -7,7 +7,6 @@ import com.github.eltonvs.obd.command.RegexPatterns.CARRIAGE_PATTERN
 import com.github.eltonvs.obd.command.RegexPatterns.WHITESPACE_PATTERN
 import com.github.eltonvs.obd.command.bytesToInt
 import com.github.eltonvs.obd.command.removeAll
-import java.util.regex.Pattern
 
 private const val STATUS_BYTE_INDEX = 2
 private const val DTC_COUNT_MASK = 0x7F
@@ -69,7 +68,7 @@ abstract class BaseTroubleCodesCommand : ObdCommand() {
         parseTroubleCodesList(response.value).joinToString(separator = ",")
     }
 
-    abstract val carriageNumberPattern: Pattern
+    abstract val carriageNumberPattern: Regex
 
     var troubleCodesList = listOf<String>()
         private set
@@ -131,7 +130,7 @@ class TroubleCodesCommand : BaseTroubleCodesCommand() {
     override val name = "Trouble Codes"
     override val mode = "03"
 
-    override val carriageNumberPattern: Pattern = Pattern.compile("^43|[\r\n]43|[\r\n]")
+    override val carriageNumberPattern: Regex = "^43|[\r\n]43|[\r\n]".toRegex()
 }
 
 class PendingTroubleCodesCommand : BaseTroubleCodesCommand() {
@@ -139,7 +138,7 @@ class PendingTroubleCodesCommand : BaseTroubleCodesCommand() {
     override val name = "Pending Trouble Codes"
     override val mode = "07"
 
-    override val carriageNumberPattern: Pattern = Pattern.compile("^47|[\r\n]47|[\r\n]")
+    override val carriageNumberPattern: Regex = "^47|[\r\n]47|[\r\n]".toRegex()
 }
 
 class PermanentTroubleCodesCommand : BaseTroubleCodesCommand() {
@@ -147,5 +146,5 @@ class PermanentTroubleCodesCommand : BaseTroubleCodesCommand() {
     override val name = "Permanent Trouble Codes"
     override val mode = "0A"
 
-    override val carriageNumberPattern: Pattern = Pattern.compile("^4A|[\r\n]4A|[\r\n]")
+    override val carriageNumberPattern: Regex = "^4A|[\r\n]4A|[\r\n]".toRegex()
 }

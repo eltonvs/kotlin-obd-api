@@ -51,7 +51,7 @@ abstract class BadResponseException(
                         throw UnSupportedCommandException(command, response)
                     }
 
-                    !command.skipDigitCheck && !matches(DIGITS_LETTERS_PATTERN.toRegex()) -> {
+                    !command.skipDigitCheck && !matches(DIGITS_LETTERS_PATTERN) -> {
                         throw NonNumericResponseException(command, response)
                     }
 
@@ -63,7 +63,7 @@ abstract class BadResponseException(
     }
 
     override fun toString(): String =
-        "${this.javaClass.simpleName} while executing command [${command.tag}], " +
+        "${this::class.simpleName ?: "Unknown"} while executing command [${command.tag}], " +
             "response [${response.value}]"
 }
 

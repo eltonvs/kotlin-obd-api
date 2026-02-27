@@ -1,16 +1,14 @@
 package com.github.eltonvs.obd.command
 
-import java.util.regex.Pattern
-
 object RegexPatterns {
-    val WHITESPACE_PATTERN: Pattern = Pattern.compile("\\s")
-    val BUS_INIT_PATTERN: Pattern = Pattern.compile("(BUS INIT)|(BUSINIT)|(\\.)")
-    val SEARCHING_PATTERN: Pattern = Pattern.compile("SEARCHING")
-    val CARRIAGE_PATTERN: Pattern = Pattern.compile("[\r\n]")
-    val CARRIAGE_COLON_PATTERN: Pattern = Pattern.compile("[\r\n].:")
-    val COLON_PATTERN: Pattern = Pattern.compile(":")
-    val DIGITS_LETTERS_PATTERN: Pattern = Pattern.compile("([0-9A-F:])+")
-    val STARTS_WITH_ALPHANUM_PATTERN: Pattern = Pattern.compile("[^a-z0-9 ]", Pattern.CASE_INSENSITIVE)
+    val WHITESPACE_PATTERN: Regex = "\\s".toRegex()
+    val BUS_INIT_PATTERN: Regex = "(BUS INIT)|(BUSINIT)|(\\.)".toRegex()
+    val SEARCHING_PATTERN: Regex = "SEARCHING".toRegex()
+    val CARRIAGE_PATTERN: Regex = "[\r\n]".toRegex()
+    val CARRIAGE_COLON_PATTERN: Regex = "[\r\n].:".toRegex()
+    val COLON_PATTERN: Regex = ":".toRegex()
+    val DIGITS_LETTERS_PATTERN: Regex = "([0-9A-F:])+".toRegex()
+    val STARTS_WITH_ALPHANUM_PATTERN: Regex = "[^a-z0-9 ]".toRegex(RegexOption.IGNORE_CASE)
 
     // Error patterns
     const val BUSINIT_ERROR_MESSAGE_PATTERN = "BUS INIT... ERROR"
@@ -23,11 +21,11 @@ object RegexPatterns {
 }
 
 fun removeAll(
-    pattern: Pattern,
+    pattern: Regex,
     input: String,
-): String = pattern.matcher(input).replaceAll("")
+): String = pattern.replace(input, "")
 
 fun removeAll(
     input: String,
-    vararg patterns: Pattern,
+    vararg patterns: Regex,
 ) = patterns.fold(input) { acc, pattern -> removeAll(pattern, acc) }
