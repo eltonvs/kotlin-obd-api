@@ -4,6 +4,7 @@ import com.github.eltonvs.obd.command.ObdCommand
 import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.bytesToInt
 import com.github.eltonvs.obd.command.calculatePercentage
+import com.github.eltonvs.obd.command.formatFloat
 
 private const val SINGLE_BYTE = 1
 private const val HUNDRED_PERCENT = 100f
@@ -17,7 +18,7 @@ class CommandedEgrCommand : ObdCommand() {
 
     override val defaultUnit = "%"
     override val handler = { response: ObdRawResponse ->
-        "%.1f".format(calculatePercentage(response.bufferedValue, bytesToProcess = SINGLE_BYTE))
+        formatFloat(calculatePercentage(response.bufferedValue, bytesToProcess = SINGLE_BYTE), 1)
     }
 }
 
@@ -31,8 +32,6 @@ class EgrErrorCommand : ObdCommand() {
     override val handler = { response: ObdRawResponse ->
         val value = bytesToInt(response.bufferedValue, bytesToProcess = SINGLE_BYTE)
         val normalized = value * (HUNDRED_PERCENT / HALF_SCALE) - HUNDRED_PERCENT
-        "%.1f".format(
-            normalized,
-        )
+        formatFloat(normalized, 1)
     }
 }

@@ -3,6 +3,7 @@ package com.github.eltonvs.obd.command.pressure
 import com.github.eltonvs.obd.command.ObdCommand
 import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.bytesToInt
+import com.github.eltonvs.obd.command.formatFloat
 
 private const val SINGLE_BYTE = 1
 private const val FUEL_PRESSURE_MULTIPLIER = 3
@@ -53,7 +54,7 @@ class FuelRailPressureCommand : ObdCommand() {
 
     override val defaultUnit = "kPa"
     override val handler = { response: ObdRawResponse ->
-        "%.3f".format(bytesToInt(response.bufferedValue) * FUEL_RAIL_PRESSURE_FACTOR)
+        formatFloat((bytesToInt(response.bufferedValue) * FUEL_RAIL_PRESSURE_FACTOR).toFloat(), 3)
     }
 }
 

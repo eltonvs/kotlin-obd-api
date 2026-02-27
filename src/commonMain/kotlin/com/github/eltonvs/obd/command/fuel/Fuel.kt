@@ -4,6 +4,7 @@ import com.github.eltonvs.obd.command.ObdCommand
 import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.bytesToInt
 import com.github.eltonvs.obd.command.calculatePercentage
+import com.github.eltonvs.obd.command.formatFloat
 
 private const val SINGLE_BYTE = 1
 private const val FUEL_CONSUMPTION_FACTOR = 0.05
@@ -42,7 +43,7 @@ class FuelConsumptionRateCommand : ObdCommand() {
 
     override val defaultUnit = "L/h"
     override val handler = { response: ObdRawResponse ->
-        "%.1f".format(bytesToInt(response.bufferedValue) * FUEL_CONSUMPTION_FACTOR)
+        formatFloat((bytesToInt(response.bufferedValue) * FUEL_CONSUMPTION_FACTOR).toFloat(), 1)
     }
 }
 
@@ -96,7 +97,7 @@ class FuelLevelCommand : ObdCommand() {
 
     override val defaultUnit = "%"
     override val handler = { response: ObdRawResponse ->
-        "%.1f".format(calculatePercentage(response.bufferedValue, bytesToProcess = SINGLE_BYTE))
+        formatFloat(calculatePercentage(response.bufferedValue, bytesToProcess = SINGLE_BYTE), 1)
     }
 }
 
@@ -108,7 +109,7 @@ class EthanolLevelCommand : ObdCommand() {
 
     override val defaultUnit = "%"
     override val handler = { response: ObdRawResponse ->
-        "%.1f".format(calculatePercentage(response.bufferedValue, bytesToProcess = SINGLE_BYTE))
+        formatFloat(calculatePercentage(response.bufferedValue, bytesToProcess = SINGLE_BYTE), 1)
     }
 }
 
@@ -124,9 +125,7 @@ class FuelTrimCommand(
     override val handler = { response: ObdRawResponse ->
         val value = bytesToInt(response.bufferedValue, bytesToProcess = SINGLE_BYTE)
         val normalized = value * (HUNDRED_PERCENT / HALF_SCALE) - HUNDRED_PERCENT
-        "%.1f".format(
-            normalized,
-        )
+        formatFloat(normalized, 1)
     }
 
     enum class FuelTrimBank(

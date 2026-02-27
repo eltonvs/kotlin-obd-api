@@ -4,6 +4,7 @@ import com.github.eltonvs.obd.command.ObdCommand
 import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.bytesToInt
 import com.github.eltonvs.obd.command.calculatePercentage
+import com.github.eltonvs.obd.command.formatFloat
 
 private const val SINGLE_BYTE = 1
 private const val RPM_DIVISOR = 4
@@ -44,7 +45,7 @@ class MassAirFlowCommand : ObdCommand() {
     override val defaultUnit = "g/s"
     override val handler = { response: ObdRawResponse ->
         val value = bytesToInt(response.bufferedValue) / MAF_DIVISOR
-        "%.2f".format(value)
+        formatFloat(value, 2)
     }
 }
 
@@ -73,7 +74,7 @@ class LoadCommand : ObdCommand() {
 
     override val defaultUnit = "%"
     override val handler = { response: ObdRawResponse ->
-        "%.1f".format(calculatePercentage(response.bufferedValue, bytesToProcess = SINGLE_BYTE))
+        formatFloat(calculatePercentage(response.bufferedValue, bytesToProcess = SINGLE_BYTE), 1)
     }
 }
 
@@ -84,7 +85,7 @@ class AbsoluteLoadCommand : ObdCommand() {
     override val pid = "43"
 
     override val defaultUnit = "%"
-    override val handler = { response: ObdRawResponse -> "%.1f".format(calculatePercentage(response.bufferedValue)) }
+    override val handler = { response: ObdRawResponse -> formatFloat(calculatePercentage(response.bufferedValue), 1) }
 }
 
 class ThrottlePositionCommand : ObdCommand() {
@@ -95,7 +96,7 @@ class ThrottlePositionCommand : ObdCommand() {
 
     override val defaultUnit = "%"
     override val handler = { response: ObdRawResponse ->
-        "%.1f".format(calculatePercentage(response.bufferedValue, bytesToProcess = SINGLE_BYTE))
+        formatFloat(calculatePercentage(response.bufferedValue, bytesToProcess = SINGLE_BYTE), 1)
     }
 }
 
@@ -107,6 +108,6 @@ class RelativeThrottlePositionCommand : ObdCommand() {
 
     override val defaultUnit = "%"
     override val handler = { response: ObdRawResponse ->
-        "%.1f".format(calculatePercentage(response.bufferedValue, bytesToProcess = SINGLE_BYTE))
+        formatFloat(calculatePercentage(response.bufferedValue, bytesToProcess = SINGLE_BYTE), 1)
     }
 }

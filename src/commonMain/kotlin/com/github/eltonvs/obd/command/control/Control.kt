@@ -6,6 +6,7 @@ import com.github.eltonvs.obd.command.RegexPatterns.BUS_INIT_PATTERN
 import com.github.eltonvs.obd.command.RegexPatterns.STARTS_WITH_ALPHANUM_PATTERN
 import com.github.eltonvs.obd.command.RegexPatterns.WHITESPACE_PATTERN
 import com.github.eltonvs.obd.command.bytesToInt
+import com.github.eltonvs.obd.command.formatFloat
 import com.github.eltonvs.obd.command.removeAll
 
 private const val MODULE_VOLTAGE_DIVISOR = 1000f
@@ -23,7 +24,7 @@ class ModuleVoltageCommand : ObdCommand() {
 
     override val defaultUnit = "V"
     override val handler = { response: ObdRawResponse ->
-        "%.2f".format(bytesToInt(response.bufferedValue) / MODULE_VOLTAGE_DIVISOR)
+        formatFloat(bytesToInt(response.bufferedValue) / MODULE_VOLTAGE_DIVISOR, 2)
     }
 }
 
@@ -35,8 +36,9 @@ class TimingAdvanceCommand : ObdCommand() {
 
     override val defaultUnit = "°"
     override val handler = { response: ObdRawResponse ->
-        "%.2f".format(
+        formatFloat(
             bytesToInt(response.bufferedValue, bytesToProcess = 1) / TIMING_ADVANCE_DIVISOR - TIMING_ADVANCE_OFFSET,
+            2,
         )
     }
 }

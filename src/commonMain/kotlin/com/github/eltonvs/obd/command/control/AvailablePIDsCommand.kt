@@ -2,6 +2,7 @@ package com.github.eltonvs.obd.command.control
 
 import com.github.eltonvs.obd.command.ObdCommand
 import com.github.eltonvs.obd.command.ObdRawResponse
+import com.github.eltonvs.obd.command.formatHex
 import com.github.eltonvs.obd.command.getBitAt
 
 private const val PID_RANGE_SIZE = 33
@@ -16,7 +17,7 @@ class AvailablePIDsCommand(
 
     override val defaultUnit = ""
     override val handler = { response: ObdRawResponse ->
-        parsePIDs(response.processedValue).joinToString(",") { "%02X".format(it) }
+        parsePIDs(response.processedValue).joinToString(",") { formatHex(it) }
     }
 
     private fun parsePIDs(rawValue: String): IntArray {
