@@ -1,233 +1,136 @@
 package com.github.eltonvs.obd.command.engine
 
 import com.github.eltonvs.obd.command.ObdRawResponse
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import com.github.eltonvs.obd.formatFloat
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@RunWith(Parameterized::class)
-class SpeedCommandParameterizedTests(
-    private val rawValue: String,
-    private val expected: Int,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                arrayOf<Any>("410D15", 21),
-                arrayOf<Any>("410D40", 64),
-                arrayOf<Any>("410D00", 0),
-                arrayOf<Any>("410DFF", 255),
-                arrayOf<Any>("410DFFFF", 255),
-            )
-    }
-
+class SpeedCommandTests {
     @Test
     fun `test valid speed responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            SpeedCommand().run {
-                handleResponse(rawResponse)
-            }
-        assertEquals("${expected}Km/h", obdResponse.formattedValue)
+        listOf(
+            "410D15" to 21,
+            "410D40" to 64,
+            "410D00" to 0,
+            "410DFF" to 255,
+            "410DFFFF" to 255,
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse = SpeedCommand().run { handleResponse(rawResponse) }
+            assertEquals("${expected}Km/h", obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 }
 
-@RunWith(Parameterized::class)
-class RPMCommandParameterizedTests(
-    private val rawValue: String,
-    private val expected: Int,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                arrayOf<Any>("410C200D", 2051),
-                arrayOf<Any>("410C283C", 2575),
-                arrayOf<Any>("410C0A00", 640),
-                arrayOf<Any>("410C0000", 0),
-                arrayOf<Any>("410CFFFF", 16_383),
-            )
-    }
-
+class RPMCommandTests {
     @Test
     fun `test valid rpm responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            RPMCommand().run {
-                handleResponse(rawResponse)
-            }
-        assertEquals("${expected}RPM", obdResponse.formattedValue)
+        listOf(
+            "410C200D" to 2051,
+            "410C283C" to 2575,
+            "410C0A00" to 640,
+            "410C0000" to 0,
+            "410CFFFF" to 16_383,
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse = RPMCommand().run { handleResponse(rawResponse) }
+            assertEquals("${expected}RPM", obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 }
 
-@RunWith(Parameterized::class)
-class MassAirFlowCommandParameterizedTests(
-    private val rawValue: String,
-    private val expected: Float,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                arrayOf<Any>("41109511", 381.61f),
-                arrayOf<Any>("41101234", 46.6f),
-                arrayOf<Any>("41100000", 0f),
-                arrayOf<Any>("4110FFFF", 655.35f),
-            )
-    }
-
+class MassAirFlowCommandTests {
     @Test
     fun `test valid maf responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            MassAirFlowCommand().run {
-                handleResponse(rawResponse)
-            }
-        assertEquals("%.2fg/s".format(expected), obdResponse.formattedValue)
+        listOf(
+            "41109511" to 381.61f,
+            "41101234" to 46.6f,
+            "41100000" to 0f,
+            "4110FFFF" to 655.35f,
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse = MassAirFlowCommand().run { handleResponse(rawResponse) }
+            assertEquals("${formatFloat(expected, 2)}g/s", obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 }
 
-@RunWith(Parameterized::class)
-class RuntimeCommandParameterizedTests(
-    private val rawValue: String,
-    private val expected: String,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                arrayOf<Any>("411F4543", "04:55:31"),
-                arrayOf<Any>("411F1234", "01:17:40"),
-                arrayOf<Any>("411F0000", "00:00:00"),
-                arrayOf<Any>("411FFFFF", "18:12:15"),
-            )
-    }
-
+class RuntimeCommandTests {
     @Test
     fun `test valid runtime responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            RuntimeCommand().run {
-                handleResponse(rawResponse)
-            }
-        assertEquals(expected, obdResponse.formattedValue)
+        listOf(
+            "411F4543" to "04:55:31",
+            "411F1234" to "01:17:40",
+            "411F0000" to "00:00:00",
+            "411FFFFF" to "18:12:15",
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse = RuntimeCommand().run { handleResponse(rawResponse) }
+            assertEquals(expected, obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 }
 
-@RunWith(Parameterized::class)
-class LoadCommandParameterizedTests(
-    private val rawValue: String,
-    private val expected: Float,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                arrayOf<Any>("410410", 6.3f),
-                arrayOf<Any>("410400", 0f),
-                arrayOf<Any>("4104FF", 100f),
-                arrayOf<Any>("4104FFFF", 100f),
-            )
-    }
-
+class LoadCommandTests {
     @Test
     fun `test valid engine load responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            LoadCommand().run {
-                handleResponse(rawResponse)
-            }
-        assertEquals("%.1f".format(expected) + '%', obdResponse.formattedValue)
+        listOf(
+            "410410" to 6.3f,
+            "410400" to 0f,
+            "4104FF" to 100f,
+            "4104FFFF" to 100f,
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse = LoadCommand().run { handleResponse(rawResponse) }
+            assertEquals("${formatFloat(expected, 1)}%", obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 }
 
-@RunWith(Parameterized::class)
-class AbsoluteLoadCommandParameterizedTests(
-    private val rawValue: String,
-    private val expected: Float,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                arrayOf<Any>("41434143", 6551.8f),
-                arrayOf<Any>("41431234", 1827.5f),
-                arrayOf<Any>("41430000", 0f),
-                arrayOf<Any>("4143FFFF", 25_700f),
-            )
-    }
-
+class AbsoluteLoadCommandTests {
     @Test
     fun `test valid engine absolute load responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            AbsoluteLoadCommand().run {
-                handleResponse(rawResponse)
-            }
-        assertEquals("%.1f".format(expected) + '%', obdResponse.formattedValue)
+        listOf(
+            "41434143" to 6551.8f,
+            "41431234" to 1827.5f,
+            "41430000" to 0f,
+            "4143FFFF" to 25_700f,
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse = AbsoluteLoadCommand().run { handleResponse(rawResponse) }
+            assertEquals("${formatFloat(expected, 1)}%", obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 }
 
-@RunWith(Parameterized::class)
-class ThrottlePositionCommandParameterizedTests(
-    private val rawValue: String,
-    private val expected: Float,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                arrayOf<Any>("411111", 6.7f),
-                arrayOf<Any>("411100", 0f),
-                arrayOf<Any>("4111FF", 100f),
-                arrayOf<Any>("4111FFFF", 100f),
-            )
-    }
-
+class ThrottlePositionCommandTests {
     @Test
     fun `test valid throttle position responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            ThrottlePositionCommand().run {
-                handleResponse(rawResponse)
-            }
-        assertEquals("%.1f".format(expected) + '%', obdResponse.formattedValue)
+        listOf(
+            "411111" to 6.7f,
+            "411100" to 0f,
+            "4111FF" to 100f,
+            "4111FFFF" to 100f,
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse = ThrottlePositionCommand().run { handleResponse(rawResponse) }
+            assertEquals("${formatFloat(expected, 1)}%", obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 }
 
-@RunWith(Parameterized::class)
-class RelativeThrottlePositionCommandParameterizedTests(
-    private val rawValue: String,
-    private val expected: Float,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                arrayOf<Any>("414545", 27.1f),
-                arrayOf<Any>("414500", 0f),
-                arrayOf<Any>("4145FF", 100f),
-                arrayOf<Any>("4145FFFF", 100f),
-            )
-    }
-
+class RelativeThrottlePositionCommandTests {
     @Test
     fun `test valid relative throttle position responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            RelativeThrottlePositionCommand().run {
-                handleResponse(rawResponse)
-            }
-        assertEquals("%.1f".format(expected) + '%', obdResponse.formattedValue)
+        listOf(
+            "414545" to 27.1f,
+            "414500" to 0f,
+            "4145FF" to 100f,
+            "4145FFFF" to 100f,
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse = RelativeThrottlePositionCommand().run { handleResponse(rawResponse) }
+            assertEquals("${formatFloat(expected, 1)}%", obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 }

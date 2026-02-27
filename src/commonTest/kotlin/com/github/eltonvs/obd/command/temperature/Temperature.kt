@@ -1,123 +1,86 @@
 package com.github.eltonvs.obd.command.temperature
 
 import com.github.eltonvs.obd.command.ObdRawResponse
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import com.github.eltonvs.obd.formatFloat
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@RunWith(Parameterized::class)
-class AirIntakeTemperatureCommandParameterizedTests(
-    private val rawValue: String,
-    private val expected: Float,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                arrayOf<Any>("410F40", 24f),
-                arrayOf<Any>("410F5D", 53f),
-                arrayOf<Any>("410F00", -40f),
-                arrayOf<Any>("410FFF", 215f),
-                arrayOf<Any>("410FFFFF", 215f),
-            )
-    }
-
+class AirIntakeTemperatureCommandTests {
     @Test
     fun `test valid air intake temperature responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            AirIntakeTemperatureCommand().run {
-                handleResponse(rawResponse)
-            }
-        assertEquals("%.1f°C".format(expected), obdResponse.formattedValue)
+        listOf(
+            "410F40" to 24f,
+            "410F5D" to 53f,
+            "410F00" to -40f,
+            "410FFF" to 215f,
+            "410FFFFF" to 215f,
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse =
+                AirIntakeTemperatureCommand().run {
+                    handleResponse(rawResponse)
+                }
+            assertEquals("${formatFloat(expected, 1)}°C", obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 }
 
-@RunWith(Parameterized::class)
-class AmbientAirTemperatureCommandParameterizedTests(
-    private val rawValue: String,
-    private val expected: Float,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                arrayOf<Any>("414640", 24f),
-                arrayOf<Any>("41465D", 53f),
-                arrayOf<Any>("414600", -40f),
-                arrayOf<Any>("4146FF", 215f),
-                arrayOf<Any>("4146FFFF", 215f),
-            )
-    }
-
+class AmbientAirTemperatureCommandTests {
     @Test
     fun `test valid ambient air intake temperature responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            AmbientAirTemperatureCommand().run {
-                handleResponse(rawResponse)
-            }
-        assertEquals("%.1f°C".format(expected), obdResponse.formattedValue)
+        listOf(
+            "414640" to 24f,
+            "41465D" to 53f,
+            "414600" to -40f,
+            "4146FF" to 215f,
+            "4146FFFF" to 215f,
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse =
+                AmbientAirTemperatureCommand().run {
+                    handleResponse(rawResponse)
+                }
+            assertEquals("${formatFloat(expected, 1)}°C", obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 }
 
-@RunWith(Parameterized::class)
-class EngineCoolantTemperatureCommandParameterizedTests(
-    private val rawValue: String,
-    private val expected: Float,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                arrayOf<Any>("410540", 24f),
-                arrayOf<Any>("41055D", 53f),
-                arrayOf<Any>("410500", -40f),
-                arrayOf<Any>("4105FF", 215f),
-                arrayOf<Any>("4105FFFF", 215f),
-            )
-    }
-
+class EngineCoolantTemperatureCommandTests {
     @Test
     fun `test valid engine coolant temperature responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            EngineCoolantTemperatureCommand().run {
-                handleResponse(rawResponse)
-            }
-        assertEquals("%.1f°C".format(expected), obdResponse.formattedValue)
+        listOf(
+            "410540" to 24f,
+            "41055D" to 53f,
+            "410500" to -40f,
+            "4105FF" to 215f,
+            "4105FFFF" to 215f,
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse =
+                EngineCoolantTemperatureCommand().run {
+                    handleResponse(rawResponse)
+                }
+            assertEquals("${formatFloat(expected, 1)}°C", obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 }
 
-@RunWith(Parameterized::class)
-class OilTemperatureCommandParameterizedTests(
-    private val rawValue: String,
-    private val expected: Float,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                arrayOf<Any>("415C40", 24f),
-                arrayOf<Any>("415C5D", 53f),
-                arrayOf<Any>("415C00", -40f),
-                arrayOf<Any>("415CFF", 215f),
-                arrayOf<Any>("415CFFFF", 215f),
-            )
-    }
-
+class OilTemperatureCommandTests {
     @Test
     fun `test valid oil temperature responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            OilTemperatureCommand().run {
-                handleResponse(rawResponse)
-            }
-        assertEquals("%.1f°C".format(expected), obdResponse.formattedValue)
+        listOf(
+            "415C40" to 24f,
+            "415C5D" to 53f,
+            "415C00" to -40f,
+            "415CFF" to 215f,
+            "415CFFFF" to 215f,
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse =
+                OilTemperatureCommand().run {
+                    handleResponse(rawResponse)
+                }
+            assertEquals("${formatFloat(expected, 1)}°C", obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 }

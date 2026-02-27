@@ -1,185 +1,186 @@
 package com.github.eltonvs.obd.command.fuel
 
 import com.github.eltonvs.obd.command.ObdRawResponse
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import com.github.eltonvs.obd.formatFloat
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@RunWith(Parameterized::class)
-class FuelConsumptionRateCommandParameterizedTests(
-    private val rawValue: String,
-    private val expected: Float,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                arrayOf<Any>("415E10E3", 216.2f),
-                arrayOf<Any>("415E1234", 233f),
-                arrayOf<Any>("415E0000", 0f),
-                arrayOf<Any>("415EFFFF", 3276.75f),
-            )
-    }
-
+class FuelConsumptionRateCommandTests {
     @Test
     fun `test valid fuel consumption responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            FuelConsumptionRateCommand().run {
-                handleResponse(rawResponse)
-            }
-        assertEquals("%.1fL/h".format(expected), obdResponse.formattedValue)
+        listOf(
+            "415E10E3" to 216.2f,
+            "415E1234" to 233f,
+            "415E0000" to 0f,
+            "415EFFFF" to 3276.75f,
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse =
+                FuelConsumptionRateCommand().run {
+                    handleResponse(rawResponse)
+                }
+            assertEquals(formatFloat(expected, 1) + "L/h", obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 }
 
-@RunWith(Parameterized::class)
-class FuelTypeCommandParameterizedTests(
-    private val rawValue: String,
-    private val expected: String,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                arrayOf<Any>("415100", "Not Available"),
-                arrayOf<Any>("415101", "Gasoline"),
-                arrayOf<Any>("415102", "Methanol"),
-                arrayOf<Any>("415103", "Ethanol"),
-                arrayOf<Any>("415104", "Diesel"),
-                arrayOf<Any>("415105", "GPL/LGP"),
-                arrayOf<Any>("415106", "Natural Gas"),
-                arrayOf<Any>("415107", "Propane"),
-                arrayOf<Any>("415108", "Electric"),
-                arrayOf<Any>("415109", "Biodiesel + Gasoline"),
-                arrayOf<Any>("41510A", "Biodiesel + Methanol"),
-                arrayOf<Any>("41510B", "Biodiesel + Ethanol"),
-                arrayOf<Any>("41510C", "Biodiesel + GPL/LGP"),
-                arrayOf<Any>("41510D", "Biodiesel + Natural Gas"),
-                arrayOf<Any>("41510E", "Biodiesel + Propane"),
-                arrayOf<Any>("41510F", "Biodiesel + Electric"),
-                arrayOf<Any>("415110", "Biodiesel + Gasoline/Electric"),
-                arrayOf<Any>("415111", "Hybrid Gasoline"),
-                arrayOf<Any>("415112", "Hybrid Ethanol"),
-                arrayOf<Any>("415113", "Hybrid Diesel"),
-                arrayOf<Any>("415114", "Hybrid Electric"),
-                arrayOf<Any>("415115", "Hybrid Mixed"),
-                arrayOf<Any>("415116", "Hybrid Regenerative"),
-                arrayOf<Any>("415116FF", "Hybrid Regenerative"),
-                arrayOf<Any>("4151FF", "Unknown"),
-                arrayOf<Any>("4151FFFF", "Unknown"),
-            )
-    }
-
+class FuelTypeCommandTests {
     @Test
     fun `test valid fuel type responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            FuelTypeCommand().run {
-                handleResponse(rawResponse)
-            }
-        assertEquals(expected, obdResponse.formattedValue)
+        listOf(
+            "415100" to "Not Available",
+            "415101" to "Gasoline",
+            "415102" to "Methanol",
+            "415103" to "Ethanol",
+            "415104" to "Diesel",
+            "415105" to "GPL/LGP",
+            "415106" to "Natural Gas",
+            "415107" to "Propane",
+            "415108" to "Electric",
+            "415109" to "Biodiesel + Gasoline",
+            "41510A" to "Biodiesel + Methanol",
+            "41510B" to "Biodiesel + Ethanol",
+            "41510C" to "Biodiesel + GPL/LGP",
+            "41510D" to "Biodiesel + Natural Gas",
+            "41510E" to "Biodiesel + Propane",
+            "41510F" to "Biodiesel + Electric",
+            "415110" to "Biodiesel + Gasoline/Electric",
+            "415111" to "Hybrid Gasoline",
+            "415112" to "Hybrid Ethanol",
+            "415113" to "Hybrid Diesel",
+            "415114" to "Hybrid Electric",
+            "415115" to "Hybrid Mixed",
+            "415116" to "Hybrid Regenerative",
+            "415116FF" to "Hybrid Regenerative",
+            "4151FF" to "Unknown",
+            "4151FFFF" to "Unknown",
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse =
+                FuelTypeCommand().run {
+                    handleResponse(rawResponse)
+                }
+            assertEquals(expected, obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 }
 
-@RunWith(Parameterized::class)
-class GenericFuelLevelCommandParameterizedTests(
-    private val rawValue: String,
-    private val expected: Float,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                arrayOf<Any>("412F10", 6.3f),
-                arrayOf<Any>("412FC8", 78.4f),
-                arrayOf<Any>("412F00", 0f),
-                arrayOf<Any>("412FFF", 100f),
-                arrayOf<Any>("412FFFFF", 100f),
-            )
-    }
-
+class GenericFuelLevelCommandTests {
     @Test
     fun `test valid fuel level responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            FuelLevelCommand().run {
-                handleResponse(rawResponse)
-            }
-        assertEquals("%.1f".format(expected) + '%', obdResponse.formattedValue)
+        listOf(
+            "412F10" to 6.3f,
+            "412FC8" to 78.4f,
+            "412F00" to 0f,
+            "412FFF" to 100f,
+            "412FFFFF" to 100f,
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse =
+                FuelLevelCommand().run {
+                    handleResponse(rawResponse)
+                }
+            assertEquals(formatFloat(expected, 1) + '%', obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 
     @Test
     fun `test valid ethanol level responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            EthanolLevelCommand().run {
-                handleResponse(rawResponse)
-            }
-        assertEquals("%.1f".format(expected) + '%', obdResponse.formattedValue)
+        listOf(
+            "412F10" to 6.3f,
+            "412FC8" to 78.4f,
+            "412F00" to 0f,
+            "412FFF" to 100f,
+            "412FFFFF" to 100f,
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse =
+                EthanolLevelCommand().run {
+                    handleResponse(rawResponse)
+                }
+            assertEquals(formatFloat(expected, 1) + '%', obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 }
 
-@RunWith(Parameterized::class)
-class GenericFuelTrimCommandParameterizedTests(
-    private val rawValue: String,
-    private val expected: Float,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                arrayOf<Any>("410610", -87.5f),
-                arrayOf<Any>("410643", -47.7f),
-                arrayOf<Any>("410680", 0f),
-                arrayOf<Any>("4106C8", 56.25f),
-                arrayOf<Any>("410600", -100f),
-                arrayOf<Any>("4106FF", 99.2f),
-                arrayOf<Any>("4106FFFF", 99.2f),
-            )
-    }
-
+class GenericFuelTrimCommandTests {
     @Test
     fun `test valid fuel trim short term bank 1 responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            FuelTrimCommand(FuelTrimCommand.FuelTrimBank.SHORT_TERM_BANK_1).run {
-                handleResponse(rawResponse)
-            }
-        assertEquals("%.1f".format(expected) + '%', obdResponse.formattedValue)
+        listOf(
+            "410610" to -87.5f,
+            "410643" to -47.7f,
+            "410680" to 0f,
+            "4106C8" to 56.25f,
+            "410600" to -100f,
+            "4106FF" to 99.2f,
+            "4106FFFF" to 99.2f,
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse =
+                FuelTrimCommand(FuelTrimCommand.FuelTrimBank.SHORT_TERM_BANK_1).run {
+                    handleResponse(rawResponse)
+                }
+            assertEquals(formatFloat(expected, 1) + '%', obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 
     @Test
     fun `test valid fuel trim short term bank 2 responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            FuelTrimCommand(FuelTrimCommand.FuelTrimBank.SHORT_TERM_BANK_2).run {
-                handleResponse(rawResponse)
-            }
-        assertEquals("%.1f".format(expected) + '%', obdResponse.formattedValue)
+        listOf(
+            "410610" to -87.5f,
+            "410643" to -47.7f,
+            "410680" to 0f,
+            "4106C8" to 56.25f,
+            "410600" to -100f,
+            "4106FF" to 99.2f,
+            "4106FFFF" to 99.2f,
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse =
+                FuelTrimCommand(FuelTrimCommand.FuelTrimBank.SHORT_TERM_BANK_2).run {
+                    handleResponse(rawResponse)
+                }
+            assertEquals(formatFloat(expected, 1) + '%', obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 
     @Test
     fun `test valid fuel trim long term bank 1 responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            FuelTrimCommand(FuelTrimCommand.FuelTrimBank.LONG_TERM_BANK_1).run {
-                handleResponse(rawResponse)
-            }
-        assertEquals("%.1f".format(expected) + '%', obdResponse.formattedValue)
+        listOf(
+            "410610" to -87.5f,
+            "410643" to -47.7f,
+            "410680" to 0f,
+            "4106C8" to 56.25f,
+            "410600" to -100f,
+            "4106FF" to 99.2f,
+            "4106FFFF" to 99.2f,
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse =
+                FuelTrimCommand(FuelTrimCommand.FuelTrimBank.LONG_TERM_BANK_1).run {
+                    handleResponse(rawResponse)
+                }
+            assertEquals(formatFloat(expected, 1) + '%', obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 
     @Test
     fun `test valid fuel trim long term bank 2 responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            FuelTrimCommand(FuelTrimCommand.FuelTrimBank.LONG_TERM_BANK_2).run {
-                handleResponse(rawResponse)
-            }
-        assertEquals("%.1f".format(expected) + '%', obdResponse.formattedValue)
+        listOf(
+            "410610" to -87.5f,
+            "410643" to -47.7f,
+            "410680" to 0f,
+            "4106C8" to 56.25f,
+            "410600" to -100f,
+            "4106FF" to 99.2f,
+            "4106FFFF" to 99.2f,
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse =
+                FuelTrimCommand(FuelTrimCommand.FuelTrimBank.LONG_TERM_BANK_2).run {
+                    handleResponse(rawResponse)
+                }
+            assertEquals(formatFloat(expected, 1) + '%', obdResponse.formattedValue, "Failed for: $rawValue")
+        }
     }
 }

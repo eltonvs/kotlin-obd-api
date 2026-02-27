@@ -1,15 +1,14 @@
 package com.github.eltonvs.obd.command.control
 
 import com.github.eltonvs.obd.command.ObdRawResponse
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import com.github.eltonvs.obd.formatHex
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 private val AVAILABLE_PIDS_01_TO_20_VALUES =
     listOf(
         // Renault Sandero 2014
-        arrayOf<Any>(
+        Pair(
             "BE3EB811",
             intArrayOf(
                 0x1,
@@ -32,7 +31,7 @@ private val AVAILABLE_PIDS_01_TO_20_VALUES =
             ),
         ),
         // Chevrolet Onix 2015
-        arrayOf<Any>(
+        Pair(
             "BE3FB813",
             intArrayOf(
                 0x1,
@@ -57,7 +56,7 @@ private val AVAILABLE_PIDS_01_TO_20_VALUES =
             ),
         ),
         // Toyota Corolla 2015
-        arrayOf<Any>(
+        Pair(
             "BE1FA813",
             intArrayOf(
                 0x1,
@@ -80,7 +79,7 @@ private val AVAILABLE_PIDS_01_TO_20_VALUES =
             ),
         ),
         // Fiat Siena 2011
-        arrayOf<Any>(
+        Pair(
             "BE3EB811",
             intArrayOf(
                 0x1,
@@ -103,7 +102,7 @@ private val AVAILABLE_PIDS_01_TO_20_VALUES =
             ),
         ),
         // VW Gol 2014
-        arrayOf<Any>(
+        Pair(
             "BE3EB813",
             intArrayOf(
                 0x1,
@@ -127,179 +126,155 @@ private val AVAILABLE_PIDS_01_TO_20_VALUES =
             ),
         ),
         // Empty
-        arrayOf<Any>("00000000", intArrayOf()),
+        Pair("00000000", intArrayOf()),
         // Complete
-        arrayOf<Any>("FFFFFFFF", (0x1..0x20).toList().toIntArray()),
+        Pair("FFFFFFFF", (0x1..0x20).toList().toIntArray()),
     )
 
-@RunWith(Parameterized::class)
-class AvailablePIDsCommand01to20ParameterizedTests(
-    private val rawValue: String,
-    private val expected: IntArray,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() = AVAILABLE_PIDS_01_TO_20_VALUES
-    }
-
+class AvailablePIDsCommand01to20Tests {
     @Test
     fun `test valid available PIDs 01 to 20 responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            AvailablePIDsCommand(AvailablePIDsCommand.AvailablePIDsRanges.PIDS_01_TO_20).run {
-                handleResponse(rawResponse)
-            }
-        assertEquals(expected.joinToString(",") { "%02X".format(it) }, obdResponse.formattedValue)
+        AVAILABLE_PIDS_01_TO_20_VALUES.forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse =
+                AvailablePIDsCommand(AvailablePIDsCommand.AvailablePIDsRanges.PIDS_01_TO_20).run {
+                    handleResponse(rawResponse)
+                }
+            assertEquals(
+                expected.joinToString(",") { formatHex(it) },
+                obdResponse.formattedValue,
+                "Failed for: $rawValue",
+            )
+        }
     }
 }
 
-@RunWith(Parameterized::class)
-class AvailablePIDsCommand21to40ParameterizedTests(
-    private val rawValue: String,
-    private val expected: IntArray,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                // Renault Sandero 2014
-                arrayOf<Any>("80018001", intArrayOf(0x21, 0x30, 0x31, 0x40)),
-                // Chevrolet Onix 2015
-                arrayOf<Any>(
-                    "8007A011",
-                    intArrayOf(0x21, 0x2e, 0x2f, 0x30, 0x31, 0x33, 0x3c, 0x40),
-                ),
-                // Toyota Corolla 2015
-                arrayOf<Any>(
-                    "9005B015",
-                    intArrayOf(0x21, 0x24, 0x2e, 0x30, 0x31, 0x33, 0x34, 0x3c, 0x3e, 0x40),
-                ),
-                // Fiat Siena 2011
-                arrayOf<Any>("80000000", intArrayOf(0x21)),
-                // VW Gol 2014
-                arrayOf<Any>(
-                    "8007A011",
-                    intArrayOf(0x21, 0x2e, 0x2f, 0x30, 0x31, 0x33, 0x3c, 0x40),
-                ),
-                // Empty
-                arrayOf<Any>("00000000", intArrayOf()),
-                // Complete
-                arrayOf<Any>("FFFFFFFF", (0x21..0x40).toList().toIntArray()),
-            )
-    }
-
+class AvailablePIDsCommand21to40Tests {
     @Test
     fun `test valid available PIDs 21 to 40 responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            AvailablePIDsCommand(AvailablePIDsCommand.AvailablePIDsRanges.PIDS_21_TO_40).run {
-                handleResponse(rawResponse)
-            }
-        assertEquals(expected.joinToString(",") { "%02X".format(it) }, obdResponse.formattedValue)
+        listOf(
+            // Renault Sandero 2014
+            Pair("80018001", intArrayOf(0x21, 0x30, 0x31, 0x40)),
+            // Chevrolet Onix 2015
+            Pair(
+                "8007A011",
+                intArrayOf(0x21, 0x2e, 0x2f, 0x30, 0x31, 0x33, 0x3c, 0x40),
+            ),
+            // Toyota Corolla 2015
+            Pair(
+                "9005B015",
+                intArrayOf(0x21, 0x24, 0x2e, 0x30, 0x31, 0x33, 0x34, 0x3c, 0x3e, 0x40),
+            ),
+            // Fiat Siena 2011
+            Pair("80000000", intArrayOf(0x21)),
+            // VW Gol 2014
+            Pair(
+                "8007A011",
+                intArrayOf(0x21, 0x2e, 0x2f, 0x30, 0x31, 0x33, 0x3c, 0x40),
+            ),
+            // Empty
+            Pair("00000000", intArrayOf()),
+            // Complete
+            Pair("FFFFFFFF", (0x21..0x40).toList().toIntArray()),
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse =
+                AvailablePIDsCommand(AvailablePIDsCommand.AvailablePIDsRanges.PIDS_21_TO_40).run {
+                    handleResponse(rawResponse)
+                }
+            assertEquals(
+                expected.joinToString(",") { formatHex(it) },
+                obdResponse.formattedValue,
+                "Failed for: $rawValue",
+            )
+        }
     }
 }
 
-@RunWith(Parameterized::class)
-class AvailablePIDsCommand41to60ParameterizedTests(
-    private val rawValue: String,
-    private val expected: IntArray,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                // Renault Sandero 2014
-                arrayOf<Any>("80000000", intArrayOf(0x41)),
-                // Chevrolet Onix 2015
-                arrayOf<Any>(
-                    "FED0C000",
-                    intArrayOf(0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x49, 0x4a, 0x4c, 0x51, 0x52),
-                ),
-                // Toyota Corolla 2015
-                arrayOf<Any>(
-                    "7ADC8001",
-                    intArrayOf(0x42, 0x43, 0x44, 0x45, 0x47, 0x49, 0x4a, 0x4c, 0x4d, 0x4e, 0x51, 0x60),
-                ),
-                // VW Gol 2014
-                arrayOf<Any>(
-                    "FED14400",
-                    intArrayOf(0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x49, 0x4a, 0x4c, 0x50, 0x52, 0x56),
-                ),
-                // Empty
-                arrayOf<Any>("00000000", intArrayOf()),
-                // Complete
-                arrayOf<Any>("FFFFFFFF", (0x41..0x60).toList().toIntArray()),
-            )
-    }
-
+class AvailablePIDsCommand41to60Tests {
     @Test
     fun `test valid available PIDs 41 to 60 responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            AvailablePIDsCommand(AvailablePIDsCommand.AvailablePIDsRanges.PIDS_41_TO_60).run {
-                handleResponse(rawResponse)
-            }
-        assertEquals(expected.joinToString(",") { "%02X".format(it) }, obdResponse.formattedValue)
+        listOf(
+            // Renault Sandero 2014
+            Pair("80000000", intArrayOf(0x41)),
+            // Chevrolet Onix 2015
+            Pair(
+                "FED0C000",
+                intArrayOf(0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x49, 0x4a, 0x4c, 0x51, 0x52),
+            ),
+            // Toyota Corolla 2015
+            Pair(
+                "7ADC8001",
+                intArrayOf(0x42, 0x43, 0x44, 0x45, 0x47, 0x49, 0x4a, 0x4c, 0x4d, 0x4e, 0x51, 0x60),
+            ),
+            // VW Gol 2014
+            Pair(
+                "FED14400",
+                intArrayOf(0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x49, 0x4a, 0x4c, 0x50, 0x52, 0x56),
+            ),
+            // Empty
+            Pair("00000000", intArrayOf()),
+            // Complete
+            Pair("FFFFFFFF", (0x41..0x60).toList().toIntArray()),
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse =
+                AvailablePIDsCommand(AvailablePIDsCommand.AvailablePIDsRanges.PIDS_41_TO_60).run {
+                    handleResponse(rawResponse)
+                }
+            assertEquals(
+                expected.joinToString(",") { formatHex(it) },
+                obdResponse.formattedValue,
+                "Failed for: $rawValue",
+            )
+        }
     }
 }
 
-@RunWith(Parameterized::class)
-class AvailablePIDsCommand61to80ParameterizedTests(
-    private val rawValue: String,
-    private val expected: IntArray,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                // Toyota Corolla 2015
-                arrayOf<Any>("08000000", intArrayOf(0x65)),
-                // Empty
-                arrayOf<Any>("00000000", intArrayOf()),
-                // Complete
-                arrayOf<Any>("FFFFFFFF", (0x61..0x80).toList().toIntArray()),
-            )
-    }
-
+class AvailablePIDsCommand61to80Tests {
     @Test
     fun `test valid available PIDs 61 to 80 responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            AvailablePIDsCommand(AvailablePIDsCommand.AvailablePIDsRanges.PIDS_61_TO_80).run {
-                handleResponse(rawResponse)
-            }
-        assertEquals(expected.joinToString(",") { "%02X".format(it) }, obdResponse.formattedValue)
+        listOf(
+            // Toyota Corolla 2015
+            Pair("08000000", intArrayOf(0x65)),
+            // Empty
+            Pair("00000000", intArrayOf()),
+            // Complete
+            Pair("FFFFFFFF", (0x61..0x80).toList().toIntArray()),
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse =
+                AvailablePIDsCommand(AvailablePIDsCommand.AvailablePIDsRanges.PIDS_61_TO_80).run {
+                    handleResponse(rawResponse)
+                }
+            assertEquals(
+                expected.joinToString(",") { formatHex(it) },
+                obdResponse.formattedValue,
+                "Failed for: $rawValue",
+            )
+        }
     }
 }
 
-@RunWith(Parameterized::class)
-class AvailablePIDsCommand81toA0ParameterizedTests(
-    private val rawValue: String,
-    private val expected: IntArray,
-) {
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters
-        fun values() =
-            listOf(
-                // Empty
-                arrayOf<Any>("00000000", intArrayOf()),
-                // Complete
-                arrayOf<Any>("FFFFFFFF", (0x81..0xA0).toList().toIntArray()),
-            )
-    }
-
+class AvailablePIDsCommand81toA0Tests {
     @Test
     fun `test valid available PIDs 81 to A0 responses handler`() {
-        val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
-        val obdResponse =
-            AvailablePIDsCommand(AvailablePIDsCommand.AvailablePIDsRanges.PIDS_81_TO_A0).run {
-                handleResponse(rawResponse)
-            }
-        assertEquals(expected.joinToString(",") { "%02X".format(it) }, obdResponse.formattedValue)
+        listOf(
+            // Empty
+            Pair("00000000", intArrayOf()),
+            // Complete
+            Pair("FFFFFFFF", (0x81..0xA0).toList().toIntArray()),
+        ).forEach { (rawValue, expected) ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            val obdResponse =
+                AvailablePIDsCommand(AvailablePIDsCommand.AvailablePIDsRanges.PIDS_81_TO_A0).run {
+                    handleResponse(rawResponse)
+                }
+            assertEquals(
+                expected.joinToString(",") { formatHex(it) },
+                obdResponse.formattedValue,
+                "Failed for: $rawValue",
+            )
+        }
     }
 }
