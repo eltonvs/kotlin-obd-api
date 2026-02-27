@@ -5,10 +5,11 @@ This document helps coding assistants correctly choose and apply this library fo
 ## Project Summary
 
 - Name: `kotlin-obd-api`
-- Language: Kotlin (JVM)
+- Language: Kotlin Multiplatform
 - Package: `com.github.eltonvs:kotlin-obd-api` (JitPack)
 - Primary purpose: query and parse OBD-II / ELM327 commands from Kotlin apps
-- Typical targets: any Kotlin/JVM app that can provide an `InputStream` and an `OutputStream` (Android, desktop, backend services, CLI tools, embedded Linux, etc.)
+- Platforms: JVM, iOS, macOS, Linux, Windows, JS, WebAssembly
+- Typical targets: any Kotlin app that can provide a `Source` and a `Sink` ([kotlinx-io](https://github.com/Kotlin/kotlinx-io)) — Android, iOS, desktop, backend services, CLI tools, embedded Linux, etc.
 
 ## When to Use
 
@@ -20,14 +21,18 @@ Use this library when the task involves:
 
 Do not use this library when the task is:
 - Managing Bluetooth pairing/UI (not provided here)
-- Implementing low-level transport drivers (you provide `InputStream`/`OutputStream`)
+- Implementing low-level transport drivers (you provide `Source`/`Sink`)
 - Rendering vehicle-specific PID catalogs beyond standard supported commands
 
 ## Core Types and API
 
 ### Connection
 
-`ObdDeviceConnection(inputStream, outputStream, ioDispatcher = Dispatchers.IO)`
+```kotlin
+ObdDeviceConnection(inputStream: Source, outputStream: Sink, dispatcher: CoroutineDispatcher = Dispatchers.Default)
+```
+
+The `dispatcher` parameter defaults to `Dispatchers.Default` for multiplatform compatibility. Pass a `StandardTestDispatcher` in tests for virtual time control.
 
 ### Execute command
 
@@ -43,7 +48,7 @@ suspend fun run(
 Execution model:
 - `run` is `suspend`
 - Commands are serialized per connection instance (internal `Mutex`)
-- Cache is keyed by command class + raw command when `useCache = true`
+- Cache is keyed by raw command string when `useCache = true`
 
 ### Response types
 
@@ -109,10 +114,26 @@ For robust apps, catch `BadResponseException` around command execution and apply
 
 ## Concurrency Notes
 
-- Call `run()` from a background coroutine context (for example `Dispatchers.IO`)
+- Call `run()` from a background coroutine context (for example `Dispatchers.Default`)
 - Reuse one `ObdDeviceConnection` per physical adapter/session
 - Do not execute commands in parallel against the same connection instance
 - On Android specifically, avoid calling `run()` on the main thread
+
+## Testing
+
+Tests use `runTest` from `kotlinx-coroutines-test` and `Buffer` from `kotlinx-io` for mock streams. Inject a `StandardTestDispatcher` sharing the test scheduler into `ObdDeviceConnection` so virtual time, `withTimeout`, and `delay` work correctly:
+
+```kotlin
+runTest {
+    val testDispatcher = StandardTestDispatcher(testScheduler)
+    val input = Buffer()
+    val output = Buffer()
+    val connection = ObdDeviceConnection(input, output, testDispatcher)
+
+    input.write("410D40>".encodeToByteArray())
+    val response = connection.run(SpeedCommand())
+}
+```
 
 ## Command Coverage
 
@@ -122,4 +143,4 @@ For the full command matrix (AT commands + Mode 01/03/04/07/09/0A), see:
 ## References
 
 - README: [`README.md`](./README.md)
-- Source entrypoint: [`src/main/kotlin/com/github/eltonvs/obd/connection/ObdDeviceConnection.kt`](./src/main/kotlin/com/github/eltonvs/obd/connection/ObdDeviceConnection.kt)
+- Source entrypoint: [`src/commonMain/kotlin/com/github/eltonvs/obd/connection/ObdDeviceConnection.kt`](./src/commonMain/kotlin/com/github/eltonvs/obd/connection/ObdDeviceConnection.kt)
