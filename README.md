@@ -11,9 +11,11 @@
 [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 
 
-A lightweight and developer-driven Kotlin OBD-II (ELM327) library for any Kotlin/JVM project to query and parse OBD commands.
+A lightweight and developer-driven **Kotlin Multiplatform** OBD-II (ELM327) library to query and parse OBD commands.
 
-Written in pure Kotlin and platform agnostic with a simple and easy-to-use interface, so you can hack your car without any hassle. :blue_car:
+Written in pure Kotlin with a simple and easy-to-use interface, so you can hack your car without any hassle. :blue_car:
+
+**Supported platforms:** JVM, iOS, macOS, Linux, Windows, JS, WebAssembly
 
 Use it to read and parse vehicle diagnostics over Bluetooth, Wi-Fi, or USB:
 
@@ -22,7 +24,7 @@ Use it to read and parse vehicle diagnostics over Bluetooth, Wi-Fi, or USB:
 - VIN and monitor status commands
 - Adapter-level AT commands for ELM327 setup
 
-The API is connection-agnostic and receives an `InputStream` and an `OutputStream`, so you can integrate it with your own Bluetooth, Wi-Fi, or USB transport.
+The API is connection-agnostic and receives a `Source` and a `Sink` ([kotlinx-io](https://github.com/Kotlin/kotlinx-io)), so you can integrate it with your own Bluetooth, Wi-Fi, or USB transport on any platform.
 
 ## Installation
 
@@ -80,7 +82,7 @@ You can download a jar from GitHub's [releases page](https://github.com/eltonvs/
 
 ## Quickstart
 
-Get an `InputStream` and an `OutputStream` from your connection interface and create an `ObdDeviceConnection` instance.
+Get a `Source` and a `Sink` from your connection interface and create an `ObdDeviceConnection` instance.
 
 ```kotlin
 import com.github.eltonvs.obd.command.Switcher
@@ -90,10 +92,10 @@ import com.github.eltonvs.obd.command.control.TroubleCodesCommand
 import com.github.eltonvs.obd.command.control.VINCommand
 import com.github.eltonvs.obd.command.engine.RPMCommand
 import com.github.eltonvs.obd.connection.ObdDeviceConnection
-import java.io.InputStream
-import java.io.OutputStream
+import kotlinx.io.Source
+import kotlinx.io.Sink
 
-suspend fun readObd(inputStream: InputStream, outputStream: OutputStream) {
+suspend fun readObd(inputStream: Source, outputStream: Sink) {
     val obdConnection = ObdDeviceConnection(inputStream, outputStream)
 
     // Typical ELM327 setup
@@ -195,7 +197,7 @@ Want to help or have something to add to the repo? Found an issue in a specific 
 
 - Open an issue to explain the problem you want to solve: [Open an issue](https://github.com/eltonvs/kotlin-obd-api/issues)
 - After discussion, open a PR (or draft PR for larger contributions): [Current PRs](https://github.com/eltonvs/kotlin-obd-api/pulls)
-- Run local verification before opening a PR: `./gradlew clean test ktlintCheck detekt`
+- Run local verification before opening a PR: `./gradlew clean jvmTest ktlintCheck detekt`
 - Auto-format Kotlin sources when needed: `./gradlew ktlintFormat`
 
 

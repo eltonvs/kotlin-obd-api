@@ -16,7 +16,11 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "25"
+          java-version: "17"
       - uses: gradle/actions/setup-gradle@v4
-      - name: Verify
-        run: ./gradlew --no-daemon clean test ktlintCheck detekt
+      - name: Build
+        run: ./gradlew --no-daemon build
+      - name: Test (JVM)
+        run: ./gradlew --no-daemon jvmTest
+      - name: Lint
+        run: ./gradlew --no-daemon ktlintCheck detekt
