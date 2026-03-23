@@ -46,6 +46,13 @@ class RPMCommandParameterizedTests(
         fun values() =
             listOf(
                 arrayOf<Any>("410C200D", 2051),
+                arrayOf<Any>("410C10A4", 1065),
+                arrayOf<Any>("41 0C 10 A4", 1065),
+                arrayOf<Any>("41 0c 10 a4", 1065),
+                arrayOf<Any>("410C10A4410C10C1", 1065),
+                arrayOf<Any>("41 0C 10 A4 41 0C 10 C1", 1065),
+                arrayOf<Any>("410C0E02410C0E02", 896),
+                arrayOf<Any>("41 0C 0E 02  41 0C 0E 02", 896),
                 arrayOf<Any>("410C283C", 2575),
                 arrayOf<Any>("410C0A00", 640),
                 arrayOf<Any>("410C0000", 0),
