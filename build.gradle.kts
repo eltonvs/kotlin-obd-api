@@ -10,6 +10,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
+    alias(libs.plugins.android.library)
     alias(libs.plugins.multiplatform)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
@@ -19,11 +20,11 @@ plugins {
 group = "com.github.eltonvs"
 version = "1.4.1"
 
-repositories {
-    mavenCentral()
-}
-
 kotlin {
+    android {
+        namespace = "com.github.eltonvs.obd"
+        compileSdk = 36
+    }
     jvm()
     iosArm64()
     iosSimulatorArm64()
