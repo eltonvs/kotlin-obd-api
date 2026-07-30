@@ -83,9 +83,16 @@ You can download a jar from GitHub's [releases page](https://github.com/eltonvs/
 Get an `InputStream` and an `OutputStream` from your connection interface and create an `ObdDeviceConnection` instance.
 
 ```kotlin
+import com.github.eltonvs.obd.command.AdaptiveTimingMode
+import com.github.eltonvs.obd.command.ObdProtocols
 import com.github.eltonvs.obd.command.Switcher
 import com.github.eltonvs.obd.command.at.ResetAdapterCommand
+import com.github.eltonvs.obd.command.at.SelectProtocolCommand
+import com.github.eltonvs.obd.command.at.SetAdaptiveTimingCommand
 import com.github.eltonvs.obd.command.at.SetEchoCommand
+import com.github.eltonvs.obd.command.at.SetHeadersCommand
+import com.github.eltonvs.obd.command.at.SetLineFeedCommand
+import com.github.eltonvs.obd.command.at.SetSpacesCommand
 import com.github.eltonvs.obd.command.control.TroubleCodesCommand
 import com.github.eltonvs.obd.command.control.VINCommand
 import com.github.eltonvs.obd.command.engine.RPMCommand
@@ -96,9 +103,14 @@ import java.io.OutputStream
 suspend fun readObd(inputStream: InputStream, outputStream: OutputStream) {
     val obdConnection = ObdDeviceConnection(inputStream, outputStream)
 
-    // Typical ELM327 setup
+    // Recommended low-noise ELM327 setup
     obdConnection.run(ResetAdapterCommand())
     obdConnection.run(SetEchoCommand(Switcher.OFF))
+    obdConnection.run(SetLineFeedCommand(Switcher.OFF))
+    obdConnection.run(SetSpacesCommand(Switcher.OFF))
+    obdConnection.run(SetHeadersCommand(Switcher.OFF))
+    obdConnection.run(SetAdaptiveTimingCommand(AdaptiveTimingMode.AUTO_1))
+    obdConnection.run(SelectProtocolCommand(ObdProtocols.AUTO))
 
     val rpm = obdConnection.run(RPMCommand())
     val vin = obdConnection.run(VINCommand(), useCache = true)
@@ -114,7 +126,16 @@ suspend fun readObd(inputStream: InputStream, outputStream: OutputStream) {
 - `command`: any `ObdCommand`
 - `useCache` (default `false`): reuses previous raw responses for identical commands
 - `delayTime` (default `0`): delay in milliseconds after sending command
-- `maxRetries` (default `5`): read polling retries before giving up
+- `maxRetries` (default `5`): legacy compatibility timeout budget mapped internally to `maxRetries * 500ms`
+
+Recommended setup profile for faster, lower-noise sessions:
+- `ResetAdapterCommand()`
+- `SetEchoCommand(Switcher.OFF)`
+- `SetLineFeedCommand(Switcher.OFF)`
+- `SetSpacesCommand(Switcher.OFF)`
+- `SetHeadersCommand(Switcher.OFF)`
+- `SetAdaptiveTimingCommand(AdaptiveTimingMode.AUTO_1)` by default, or `AUTO_2` if you want more aggressive adapter-side timing
+- `SelectProtocolCommand(knownProtocol)` when the protocol is known, otherwise `SelectProtocolCommand(ObdProtocols.AUTO)`
 
 Runtime note: call `run()` from a background coroutine context (for example `Dispatchers.IO`). On Android, do not call it from the main thread.
 

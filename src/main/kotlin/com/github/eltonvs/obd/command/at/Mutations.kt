@@ -21,7 +21,7 @@ class SetAdaptiveTimingCommand(
 ) : ATCommand() {
     override val tag = "SET_ADAPTIVE_TIMING_${value.name}"
     override val name = "Set Adaptive Timing Control ${value.displayName}"
-    override val pid = "AT ${value.command}"
+    override val pid = "AT${value.command}"
 }
 
 class SetEchoCommand(
@@ -61,5 +61,5 @@ class SetTimeoutCommand(
 ) : ATCommand() {
     override val tag = "SET_TIMEOUT"
     override val name = "Set Timeout - $timeout"
-    override val pid = "ST ${Integer.toHexString(TIMEOUT_MASK and timeout)}"
+    override val pid = "ST ${(TIMEOUT_MASK and timeout).toString(radix = 16).uppercase().padStart(2, '0')}"
 }

@@ -7,6 +7,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
@@ -98,6 +99,107 @@ class ObdDeviceConnectionTest {
         }
 
     @Test
+    fun `returns promptly when first byte arrives after a short delay`() =
+        runBlocking {
+            val input = ScriptedInputStream()
+            val output =
+                ScriptedOutputStream(
+                    input = input,
+                    responses =
+                        mapOf(
+                            "01 0D" to ResponsePlan(payload = "410D40>", autoEnqueue = false),
+                        ),
+                )
+            val connection = ObdDeviceConnection(input, output, Dispatchers.Default)
+            val command = TestObdCommand(tag = "SPEED", pid = "0D")
+
+            launch {
+                waitUntilWriteCount(output, 1)
+                delay(20)
+                input.enqueue("410D40>")
+            }
+
+            val response =
+                connection.runWithReadPolicy(
+                    command,
+                    readPolicy = ObdReadPolicy(responseTimeoutMs = 1_500, interByteTimeoutMs = 25),
+                )
+
+            assertEquals("410D40", response.value)
+            assertTrue(
+                response.rawResponse.elapsedTime < 250,
+                "expected elapsed time below 250ms, was ${response.rawResponse.elapsedTime}ms",
+            )
+        }
+
+    @Test
+    fun `keeps reading fragmented responses while bytes continue arriving`() =
+        runBlocking {
+            val input = ScriptedInputStream()
+            val output =
+                ScriptedOutputStream(
+                    input = input,
+                    responses =
+                        mapOf(
+                            "01 0C" to ResponsePlan(payload = "410C1AF8>", autoEnqueue = false),
+                        ),
+                )
+            val connection = ObdDeviceConnection(input, output, Dispatchers.Default)
+            val command = TestObdCommand(tag = "RPM", pid = "0C")
+
+            launch {
+                waitUntilWriteCount(output, 1)
+                delay(20)
+                input.enqueue("41")
+                delay(15)
+                input.enqueue("0C")
+                delay(15)
+                input.enqueue("1AF8>")
+            }
+
+            val response =
+                connection.runWithReadPolicy(
+                    command,
+                    readPolicy = ObdReadPolicy(responseTimeoutMs = 1_500, interByteTimeoutMs = 150),
+                )
+
+            assertEquals("410C1AF8", response.value)
+            assertEquals("410C1AF8", response.rawResponse.value)
+        }
+
+    @Test
+    fun `uses the legacy retry budget between response fragments`() =
+        runBlocking {
+            val input = ScriptedInputStream()
+            val output =
+                ScriptedOutputStream(
+                    input = input,
+                    responses =
+                        mapOf(
+                            "01 0C" to ResponsePlan(payload = "410C1AF8>", autoEnqueue = false),
+                        ),
+                )
+            val connection = ObdDeviceConnection(input, output, Dispatchers.Default)
+            val command = TestObdCommand(tag = "RPM", pid = "0C")
+
+            launch {
+                waitUntilWriteCount(output, 1)
+                delay(20)
+                input.enqueue("SEARCHING\r")
+                delay(700)
+                input.enqueue("410C1AF8>")
+            }
+
+            val response =
+                withTimeout(2_500) {
+                    connection.run(command, maxRetries = 3)
+                }
+
+            assertEquals("410C1AF8", response.value)
+            assertEquals("410C1AF8", response.rawResponse.value)
+        }
+
+    @Test
     fun `propagates cancellation while waiting for data`() {
         runBlocking {
             val input = IdleInputStream()
@@ -126,6 +228,58 @@ class ObdDeviceConnectionTest {
             withTimeout(400) {
                 val response = connection.run(command, maxRetries = 0)
                 assertEquals("", response.value)
+                assertTrue(
+                    response.rawResponse.elapsedTime < 200,
+                    "expected near-immediate return, was ${response.rawResponse.elapsedTime}ms",
+                )
+            }
+        }
+
+    @Test
+    fun `uses legacy max retries as response timeout budget`() =
+        runBlocking {
+            val input = IdleInputStream()
+            val output = ByteArrayOutputStream()
+            val connection = ObdDeviceConnection(input, output, Dispatchers.Default)
+            val command = TestObdCommand(tag = "SPEED", pid = "0D")
+
+            withTimeout(1_500) {
+                val response = connection.run(command, maxRetries = 1)
+                assertEquals("", response.value)
+                assertTrue(
+                    response.rawResponse.elapsedTime >= 450,
+                    "expected at least ~500ms, was ${response.rawResponse.elapsedTime}ms",
+                )
+                assertTrue(
+                    response.rawResponse.elapsedTime < 1_200,
+                    "expected legacy timeout below 1200ms, was ${response.rawResponse.elapsedTime}ms",
+                )
+            }
+        }
+
+    @Test
+    fun `uses explicit read policy timeout when no data is available`() =
+        runBlocking {
+            val input = IdleInputStream()
+            val output = ByteArrayOutputStream()
+            val connection = ObdDeviceConnection(input, output, Dispatchers.Default)
+            val command = TestObdCommand(tag = "SPEED", pid = "0D")
+
+            withTimeout(500) {
+                val response =
+                    connection.runWithReadPolicy(
+                        command,
+                        readPolicy = ObdReadPolicy(responseTimeoutMs = 40, interByteTimeoutMs = 25),
+                    )
+                assertEquals("", response.value)
+                assertTrue(
+                    response.rawResponse.elapsedTime >= 30,
+                    "expected explicit timeout near 40ms, was ${response.rawResponse.elapsedTime}ms",
+                )
+                assertTrue(
+                    response.rawResponse.elapsedTime < 250,
+                    "expected explicit timeout below 250ms, was ${response.rawResponse.elapsedTime}ms",
+                )
             }
         }
 }
@@ -211,4 +365,15 @@ private class IdleInputStream : InputStream() {
     override fun available(): Int = 0
 
     override fun read(): Int = -1
+}
+
+private suspend fun waitUntilWriteCount(
+    output: ScriptedOutputStream,
+    expectedCount: Int,
+) {
+    withTimeout(1_000) {
+        while (output.writes.size < expectedCount) {
+            delay(10)
+        }
+    }
 }
