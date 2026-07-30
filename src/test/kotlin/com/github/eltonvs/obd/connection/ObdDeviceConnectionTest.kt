@@ -168,6 +168,38 @@ class ObdDeviceConnectionTest {
         }
 
     @Test
+    fun `uses the legacy retry budget between response fragments`() =
+        runBlocking {
+            val input = ScriptedInputStream()
+            val output =
+                ScriptedOutputStream(
+                    input = input,
+                    responses =
+                        mapOf(
+                            "01 0C" to ResponsePlan(payload = "410C1AF8>", autoEnqueue = false),
+                        ),
+                )
+            val connection = ObdDeviceConnection(input, output, Dispatchers.Default)
+            val command = TestObdCommand(tag = "RPM", pid = "0C")
+
+            launch {
+                waitUntilWriteCount(output, 1)
+                delay(20)
+                input.enqueue("SEARCHING\r")
+                delay(700)
+                input.enqueue("410C1AF8>")
+            }
+
+            val response =
+                withTimeout(2_500) {
+                    connection.run(command, maxRetries = 3)
+                }
+
+            assertEquals("410C1AF8", response.value)
+            assertEquals("410C1AF8", response.rawResponse.value)
+        }
+
+    @Test
     fun `propagates cancellation while waiting for data`() {
         runBlocking {
             val input = IdleInputStream()

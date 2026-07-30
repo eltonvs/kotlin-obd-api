@@ -133,9 +133,10 @@ class ObdDeviceConnection
 
         private fun legacyReadPolicy(maxRetries: Int): ObdReadPolicy {
             require(maxRetries >= 0) { "maxRetries must be >= 0" }
+            val timeoutMs = maxRetries.toLong() * LEGACY_READ_RETRY_DELAY_MS
             return ObdReadPolicy(
-                responseTimeoutMs = maxRetries.toLong() * LEGACY_READ_RETRY_DELAY_MS,
-                interByteTimeoutMs = LEGACY_READ_RETRY_DELAY_MS,
+                responseTimeoutMs = timeoutMs,
+                interByteTimeoutMs = timeoutMs,
             )
         }
 
