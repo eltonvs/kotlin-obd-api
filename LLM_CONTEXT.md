@@ -48,7 +48,8 @@ suspend fun run(
 Execution model:
 - `run` is `suspend`
 - Commands are serialized per connection instance (internal `Mutex`)
-- Cache is keyed by raw command string when `useCache = true`
+- Cache is keyed by command tag + raw command when `useCache = true`
+- `maxRetries` is kept for compatibility and maps to a legacy response timeout budget of `maxRetries * 500ms`
 
 ### Response types
 
@@ -69,7 +70,9 @@ Execution model:
 obdConnection.run(ResetAdapterCommand())
 obdConnection.run(SetEchoCommand(Switcher.OFF))
 obdConnection.run(SetLineFeedCommand(Switcher.OFF))
+obdConnection.run(SetSpacesCommand(Switcher.OFF))
 obdConnection.run(SetHeadersCommand(Switcher.OFF))
+obdConnection.run(SetAdaptiveTimingCommand(AdaptiveTimingMode.AUTO_1))
 ```
 
 Depending on adapter/car, protocol selection may be explicit:

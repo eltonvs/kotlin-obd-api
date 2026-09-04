@@ -255,6 +255,82 @@ class ObdDeviceConnectionTest {
             assertTrue(results.contains("410D40"), "Should contain speed response")
             assertTrue(results.contains("410C1AF8"), "Should contain RPM response")
         }
+
+    @Test
+    fun `keeps reading fragmented responses while bytes continue arriving`() =
+        runTest {
+            val testDispatcher = StandardTestDispatcher(testScheduler)
+            val input = Buffer()
+            val output = Buffer()
+            val connection = ObdDeviceConnection(input, output, testDispatcher)
+            val command = TestObdCommand(tag = "RPM", pid = "0C")
+
+            val deferred =
+                async {
+                    connection.runWithReadPolicy(
+                        command,
+                        readPolicy = ObdReadPolicy(responseTimeoutMs = 1_500, interByteTimeoutMs = 150),
+                    )
+                }
+
+            advanceTimeBy(20)
+            input.write("41".encodeToByteArray())
+            advanceTimeBy(100)
+            input.write("0C".encodeToByteArray())
+            advanceTimeBy(100)
+            input.write("1AF8>".encodeToByteArray())
+
+            val response = deferred.await()
+            assertEquals("410C1AF8", response.value)
+        }
+
+    @Test
+    fun `stops reading when the inter byte timeout elapses`() =
+        runTest {
+            val testDispatcher = StandardTestDispatcher(testScheduler)
+            val input = Buffer()
+            val output = Buffer()
+            val connection = ObdDeviceConnection(input, output, testDispatcher)
+            val command = TestObdCommand(tag = "RPM", pid = "0C")
+
+            val deferred =
+                async {
+                    connection.runWithReadPolicy(
+                        command,
+                        readPolicy = ObdReadPolicy(responseTimeoutMs = 5_000, interByteTimeoutMs = 100),
+                    )
+                }
+
+            advanceTimeBy(20)
+            input.write("410C".encodeToByteArray())
+            // Stay silent for longer than the inter-byte budget: the read gives up early
+            // instead of waiting for the full response budget.
+            advanceTimeBy(300)
+
+            val response = deferred.await()
+            assertEquals("410C", response.value)
+        }
+
+    @Test
+    fun `uses explicit read policy timeout when no data is available`() =
+        runTest {
+            val testDispatcher = StandardTestDispatcher(testScheduler)
+            val input = Buffer()
+            val output = Buffer()
+            val connection = ObdDeviceConnection(input, output, testDispatcher)
+            val command = TestObdCommand(tag = "SPEED", pid = "0D")
+
+            val timeBefore = testScheduler.currentTime
+            val response =
+                connection.runWithReadPolicy(
+                    command,
+                    readPolicy = ObdReadPolicy(responseTimeoutMs = 40, interByteTimeoutMs = 25),
+                )
+            val timeAfter = testScheduler.currentTime
+
+            assertEquals("", response.value)
+            assertTrue(timeAfter - timeBefore < 500, "Should give up after the explicit response timeout")
+        }
 }
 
 private class TestObdCommand(

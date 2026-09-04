@@ -11,11 +11,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.io.Sink
 import kotlinx.io.Source
 import kotlin.time.TimeSource
 
-private const val READ_RETRY_DELAY_MS = 500L
+private const val LEGACY_READ_RETRY_DELAY_MS = 500L
+private const val READ_POLL_INTERVAL_MS = 10L
 
 class ObdDeviceConnection(
     private val inputStream: Source,
@@ -30,6 +32,13 @@ class ObdDeviceConnection(
         useCache: Boolean = false,
         delayTime: Long = 0,
         maxRetries: Int = 5,
+    ): ObdResponse = runWithReadPolicy(command, useCache, delayTime, legacyReadPolicy(maxRetries))
+
+    internal suspend fun runWithReadPolicy(
+        command: ObdCommand,
+        useCache: Boolean = false,
+        delayTime: Long = 0,
+        readPolicy: ObdReadPolicy,
     ): ObdResponse =
         runMutex.withLock {
             val cacheKey = "${command.tag}:${command.rawCommand}"
@@ -37,7 +46,7 @@ class ObdDeviceConnection(
                 if (useCache && responseCache[cacheKey] != null) {
                     responseCache.getValue(cacheKey)
                 } else {
-                    runCommand(command, delayTime, maxRetries).also {
+                    runCommand(command, delayTime, readPolicy).also {
                         if (useCache) {
                             responseCache[cacheKey] = it
                         }
@@ -49,12 +58,11 @@ class ObdDeviceConnection(
     private suspend fun runCommand(
         command: ObdCommand,
         delayTime: Long,
-        maxRetries: Int,
+        readPolicy: ObdReadPolicy,
     ): ObdRawResponse {
-        var rawData = ""
         val mark = TimeSource.Monotonic.markNow()
         sendCommand(command, delayTime)
-        rawData = readRawData(maxRetries)
+        val rawData = readRawData(readPolicy)
         val elapsedTime = mark.elapsedNow().inWholeMilliseconds
         return ObdRawResponse(rawData, elapsedTime)
     }
@@ -74,33 +82,64 @@ class ObdDeviceConnection(
         }
     }
 
-    private suspend fun readRawData(maxRetries: Int): String =
+    private suspend fun readRawData(readPolicy: ObdReadPolicy): String =
         withContext(dispatcher) {
-            val res = StringBuilder()
-            var retriesCount = 0
+            val response = StringBuilder()
 
-            // Read until '>' arrives or retries are exhausted.
-            // Always attempt to read available data first; only consult
-            // retriesCount when no bytes are buffered (mirrors the original
-            // InputStream.available() == 0 path).
-            var isReading = true
-            while (isReading) {
-                if (inputStream.request(1)) {
-                    val charValue = inputStream.readByte().toInt().toChar()
-                    if (charValue == '>') {
-                        isReading = false
-                    } else {
-                        res.append(charValue)
-                    }
-                } else {
-                    if (retriesCount >= maxRetries) {
-                        isReading = false
-                    } else {
-                        retriesCount += 1
-                        delay(READ_RETRY_DELAY_MS)
+            // Always drain whatever is already buffered before consulting any timeout,
+            // so a fully buffered response is returned even with a zero-length budget.
+            var shouldStop = drainAvailableBytes(response)
+            if (!shouldStop) {
+                // The whole read is capped by the response budget; each gap between
+                // bytes is capped by the (usually shorter) inter-byte budget.
+                withTimeoutOrNull(readPolicy.responseTimeoutMs) {
+                    while (!shouldStop) {
+                        val idleTimeoutMs =
+                            if (response.isNotEmpty()) {
+                                readPolicy.interByteTimeoutMs
+                            } else {
+                                readPolicy.responseTimeoutMs
+                            }
+                        val gotMoreData =
+                            withTimeoutOrNull(idleTimeoutMs) {
+                                while (!inputStream.request(1)) {
+                                    delay(READ_POLL_INTERVAL_MS)
+                                }
+                            }
+                        shouldStop =
+                            gotMoreData == null ||
+                            drainAvailableBytes(response)
                     }
                 }
             }
-            removeAll(SEARCHING_PATTERN, res.toString()).trim()
+            cleanResponse(response)
         }
+
+    /**
+     * Consumes every byte currently buffered, returning `true` when the response
+     * terminator (`>`) was seen and reading should stop.
+     */
+    private fun drainAvailableBytes(response: StringBuilder): Boolean {
+        var shouldStop = false
+        while (!shouldStop && inputStream.request(1)) {
+            val charValue = inputStream.readByte().toInt().toChar()
+            if (charValue == '>') {
+                shouldStop = true
+            } else {
+                response.append(charValue)
+            }
+        }
+        return shouldStop
+    }
+
+    private fun cleanResponse(response: StringBuilder): String = removeAll(SEARCHING_PATTERN, response.toString()).trim()
+
+    private fun legacyReadPolicy(maxRetries: Int): ObdReadPolicy {
+        require(maxRetries >= 0) { "maxRetries must be >= 0" }
+        val timeoutMs = maxRetries.toLong() * LEGACY_READ_RETRY_DELAY_MS
+        return ObdReadPolicy(
+            responseTimeoutMs = timeoutMs,
+            interByteTimeoutMs = timeoutMs,
+        )
+    }
 }
