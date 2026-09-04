@@ -15,13 +15,14 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ChannelResult
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlinx.coroutines.yield
 import kotlinx.io.Buffer
 import kotlinx.io.Sink
 import kotlinx.io.Source
@@ -53,6 +54,13 @@ class ObdDeviceConnection(
 
     private val readerScope = CoroutineScope(SupervisorJob() + dispatcher)
     private val incoming = Channel<Byte>(Channel.UNLIMITED)
+
+    /**
+     * Bumped every time the reader finishes looking at the source, whether or
+     * not that produced bytes. Waiting on it beats sleeping: a read can only be
+     * sure the source held nothing once the reader has actually inspected it.
+     */
+    private val readerCycles = MutableStateFlow(0L)
     private val reader: Job = readerScope.launch(start = CoroutineStart.LAZY) { pumpInput() }
 
     suspend fun run(
@@ -144,20 +152,22 @@ class ObdDeviceConnection(
                         return
                     }
                 }
+                readerCycles.value += 1
             }
         } catch (e: IllegalStateException) {
             incoming.close(e)
         } catch (e: kotlinx.io.IOException) {
             incoming.close(e)
+        } finally {
+            // The reader is gone and the channel state is final: wake anyone
+            // waiting on a cycle so they observe the closure instead of the
+            // signal that will now never come.
+            readerCycles.value += 1
         }
     }
 
     private suspend fun readRawData(readPolicy: ObdReadPolicy): String {
         reader.start()
-        // The reader owns the source, so bytes buffered before this command only
-        // reach us once it has been scheduled at least once.
-        yield()
-
         val response = StringBuilder()
 
         // Always drain whatever has already arrived before consulting any timeout,
@@ -166,8 +176,9 @@ class ObdDeviceConnection(
         if (!shouldStop) {
             // A zero budget (maxRetries = 0) means "do not wait for the adapter",
             // not "discard a response that already arrived", so the asynchronous
-            // reader still gets a minimum window to hand it over. An explicit
-            // non-zero policy is used exactly as given.
+            // reader still gets a window in which to hand it over. It is only an
+            // upper bound: the wait below ends as soon as the reader has looked
+            // at the source. An explicit non-zero policy is used exactly as given.
             val responseBudgetMs = readPolicy.responseTimeoutMs.orMinimumWindow()
             val interByteBudgetMs = readPolicy.interByteTimeoutMs.orMinimumWindow()
 
@@ -200,6 +211,7 @@ class ObdDeviceConnection(
      */
     private suspend fun awaitMoreBytes(response: StringBuilder): Boolean {
         while (true) {
+            val cyclesBefore = readerCycles.value
             val lengthBefore = response.length
             if (drainAvailableBytes(response)) {
                 return true
@@ -207,7 +219,9 @@ class ObdDeviceConnection(
             if (response.length > lengthBefore) {
                 return false
             }
-            delay(READ_POLL_INTERVAL_MS)
+            // Nothing yet: wait for the reader to look at the source again
+            // rather than sleeping for a fixed interval and hoping it has.
+            readerCycles.first { it != cyclesBefore }
         }
     }
 
