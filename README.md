@@ -103,24 +103,27 @@ import kotlinx.io.Source
 import kotlinx.io.Sink
 
 suspend fun readObd(inputStream: Source, outputStream: Sink) {
-    val obdConnection = ObdDeviceConnection(inputStream, outputStream)
+    // The connection starts a reader coroutine on first use; close() stops it.
+    // The streams themselves stay owned by the caller.
+    ObdDeviceConnection(inputStream, outputStream).use { obdConnection ->
 
     // Recommended low-noise ELM327 setup
-    obdConnection.run(ResetAdapterCommand())
-    obdConnection.run(SetEchoCommand(Switcher.OFF))
-    obdConnection.run(SetLineFeedCommand(Switcher.OFF))
-    obdConnection.run(SetSpacesCommand(Switcher.OFF))
-    obdConnection.run(SetHeadersCommand(Switcher.OFF))
-    obdConnection.run(SetAdaptiveTimingCommand(AdaptiveTimingMode.AUTO_1))
-    obdConnection.run(SelectProtocolCommand(ObdProtocols.AUTO))
+        obdConnection.run(ResetAdapterCommand())
+        obdConnection.run(SetEchoCommand(Switcher.OFF))
+        obdConnection.run(SetLineFeedCommand(Switcher.OFF))
+        obdConnection.run(SetSpacesCommand(Switcher.OFF))
+        obdConnection.run(SetHeadersCommand(Switcher.OFF))
+        obdConnection.run(SetAdaptiveTimingCommand(AdaptiveTimingMode.AUTO_1))
+        obdConnection.run(SelectProtocolCommand(ObdProtocols.AUTO))
 
-    val rpm = obdConnection.run(RPMCommand())
-    val vin = obdConnection.run(VINCommand(), useCache = true)
-    val troubleCodes = obdConnection.run(TroubleCodesCommand())
+        val rpm = obdConnection.run(RPMCommand())
+        val vin = obdConnection.run(VINCommand(), useCache = true)
+        val troubleCodes = obdConnection.run(TroubleCodesCommand())
 
-    println("RPM: ${rpm.value} ${rpm.unit}")
-    println("VIN: ${vin.value}")
-    println("DTC: ${troubleCodes.value.ifBlank { "none" }}")
+        println("RPM: ${rpm.value} ${rpm.unit}")
+        println("VIN: ${vin.value}")
+        println("DTC: ${troubleCodes.value.ifBlank { "none" }}")
+    }
 }
 ```
 
@@ -140,6 +143,8 @@ Recommended setup profile for faster, lower-noise sessions:
 - `SelectProtocolCommand(knownProtocol)` when the protocol is known, otherwise `SelectProtocolCommand(ObdProtocols.AUTO)`
 
 Runtime note: call `run()` from a background coroutine context (for example `Dispatchers.IO`). On Android, do not call it from the main thread.
+
+Reads are performed by a single reader coroutine, started on the first `run()`, that owns the `Source`. Because `run()` only waits on that reader, its timeout applies even when the underlying stream blocks (sockets, serial ports); end of stream ends the read immediately, and a stream that throws surfaces the error from `run()`. Call `close()` (or use `use { }`) when finished so the reader stops; the `Source`/`Sink` are not closed for you.
 
 Concurrency note: each `ObdDeviceConnection` instance is a serialized command channel guarded by a coroutine `Mutex`. Reuse one instance per physical connection.
 

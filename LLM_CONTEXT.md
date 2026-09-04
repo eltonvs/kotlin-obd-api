@@ -34,6 +34,8 @@ ObdDeviceConnection(inputStream: Source, outputStream: Sink, dispatcher: Corouti
 
 The `dispatcher` parameter defaults to `Dispatchers.Default` for multiplatform compatibility. Pass a `StandardTestDispatcher` in tests for virtual time control.
 
+`ObdDeviceConnection` is `AutoCloseable`. A reader coroutine started on the first `run()` owns the `Source` and feeds a channel that `run()` consumes, so read timeouts apply even when the source blocks; end of stream ends the read at once and source errors propagate from `run()`. Call `close()` when done (the streams are not closed for you).
+
 ### Execute command
 
 ```kotlin
@@ -118,7 +120,7 @@ For robust apps, catch `BadResponseException` around command execution and apply
 ## Concurrency Notes
 
 - Call `run()` from a background coroutine context (for example `Dispatchers.Default`)
-- Reuse one `ObdDeviceConnection` per physical adapter/session
+- Reuse one `ObdDeviceConnection` per physical adapter/session and `close()` it when the session ends
 - Do not execute commands in parallel against the same connection instance
 - On Android specifically, avoid calling `run()` on the main thread
 

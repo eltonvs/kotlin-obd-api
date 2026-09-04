@@ -6,26 +6,52 @@ import com.github.eltonvs.obd.command.ObdResponse
 import com.github.eltonvs.obd.command.RegexPatterns.SEARCHING_PATTERN
 import com.github.eltonvs.obd.command.removeAll
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ChannelResult
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.io.Buffer
 import kotlinx.io.Sink
 import kotlinx.io.Source
 import kotlin.time.TimeSource
 
 private const val LEGACY_READ_RETRY_DELAY_MS = 500L
 private const val READ_POLL_INTERVAL_MS = 10L
+private const val READ_CHUNK_SIZE = 256
+private const val RESPONSE_TERMINATOR = '>'
 
+/**
+ * Serialises OBD commands over a [Source]/[Sink] pair.
+ *
+ * Bytes are pulled from [inputStream] by a single reader coroutine that is
+ * started on the first [run] and owns the source from then on. `run()` only
+ * consumes from the reader's channel, so its timeouts fire even when the
+ * source blocks in the underlying transport read. Call [close] when the
+ * connection is no longer needed to stop the reader; the streams themselves
+ * belong to the caller and are not closed.
+ */
 class ObdDeviceConnection(
     private val inputStream: Source,
     private val outputStream: Sink,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
-) {
+) : AutoCloseable {
     private val runMutex = Mutex()
     private val responseCache = mutableMapOf<String, ObdRawResponse>()
+
+    private val readerScope = CoroutineScope(SupervisorJob() + dispatcher)
+    private val incoming = Channel<Byte>(Channel.UNLIMITED)
+    private val reader: Job = readerScope.launch(start = CoroutineStart.LAZY) { pumpInput() }
 
     suspend fun run(
         command: ObdCommand,
@@ -55,6 +81,11 @@ class ObdDeviceConnection(
             command.handleResponse(obdRawResponse)
         }
 
+    override fun close() {
+        readerScope.cancel()
+        incoming.close()
+    }
+
     private suspend fun runCommand(
         command: ObdCommand,
         delayTime: Long,
@@ -67,8 +98,6 @@ class ObdDeviceConnection(
         return ObdRawResponse(rawData, elapsedTime)
     }
 
-    // Dispatchers.Default is used instead of Dispatchers.IO for Kotlin Multiplatform
-    // compatibility. kotlinx-io buffers are non-blocking and work efficiently on Default.
     private suspend fun sendCommand(
         command: ObdCommand,
         delayTime: Long,
@@ -82,54 +111,97 @@ class ObdDeviceConnection(
         }
     }
 
-    private suspend fun readRawData(readPolicy: ObdReadPolicy): String =
-        withContext(dispatcher) {
-            val response = StringBuilder()
+    /**
+     * Reader loop: copies whatever the source yields into [incoming].
+     *
+     * A transport-backed source (`RawSource.buffered()`) blocks in
+     * `readAtMostTo` until data arrives and returns -1 only once exhausted, so
+     * -1 closes the channel. A plain [Buffer] returns -1 whenever it is
+     * momentarily empty, so it is polled instead. A source that throws (e.g.
+     * closed underneath us) closes the channel with that cause.
+     */
+    private suspend fun pumpInput() {
+        val chunk = ByteArray(READ_CHUNK_SIZE)
+        val pollWhenEmpty = inputStream is Buffer
+        try {
+            while (readerScope.isActive) {
+                val read = inputStream.readAtMostTo(chunk)
+                when {
+                    read > 0 -> {
+                        for (i in 0 until read) {
+                            incoming.trySend(chunk[i])
+                        }
+                    }
 
-            // Always drain whatever is already buffered before consulting any timeout,
-            // so a fully buffered response is returned even with a zero-length budget.
-            var shouldStop = drainAvailableBytes(response)
-            if (!shouldStop) {
-                // The whole read is capped by the response budget; each gap between
-                // bytes is capped by the (usually shorter) inter-byte budget.
-                withTimeoutOrNull(readPolicy.responseTimeoutMs) {
-                    while (!shouldStop) {
-                        val idleTimeoutMs =
-                            if (response.isNotEmpty()) {
-                                readPolicy.interByteTimeoutMs
-                            } else {
-                                readPolicy.responseTimeoutMs
-                            }
-                        val gotMoreData =
-                            withTimeoutOrNull(idleTimeoutMs) {
-                                while (!inputStream.request(1)) {
-                                    delay(READ_POLL_INTERVAL_MS)
-                                }
-                            }
-                        shouldStop =
-                            gotMoreData == null ||
-                            drainAvailableBytes(response)
+                    pollWhenEmpty -> {
+                        delay(READ_POLL_INTERVAL_MS)
+                    }
+
+                    else -> {
+                        incoming.close()
+                        return
                     }
                 }
             }
-            cleanResponse(response)
+        } catch (e: IllegalStateException) {
+            incoming.close(e)
+        } catch (e: kotlinx.io.IOException) {
+            incoming.close(e)
         }
+    }
 
-    /**
-     * Consumes every byte currently buffered, returning `true` when the response
-     * terminator (`>`) was seen and reading should stop.
-     */
-    private fun drainAvailableBytes(response: StringBuilder): Boolean {
-        var shouldStop = false
-        while (!shouldStop && inputStream.request(1)) {
-            val charValue = inputStream.readByte().toInt().toChar()
-            if (charValue == '>') {
-                shouldStop = true
-            } else {
-                response.append(charValue)
+    private suspend fun readRawData(readPolicy: ObdReadPolicy): String {
+        reader.start()
+        val response = StringBuilder()
+
+        // Always drain whatever has already arrived before consulting any timeout,
+        // so a fully buffered response is returned even with a zero-length budget.
+        var shouldStop = drainAvailableBytes(response)
+        if (!shouldStop) {
+            // The whole read is capped by the response budget; each gap between
+            // bytes is capped by the (usually shorter) inter-byte budget.
+            withTimeoutOrNull(readPolicy.responseTimeoutMs) {
+                while (!shouldStop) {
+                    val idleTimeoutMs =
+                        if (response.isNotEmpty()) {
+                            readPolicy.interByteTimeoutMs
+                        } else {
+                            readPolicy.responseTimeoutMs
+                        }
+                    val gotMoreData =
+                        withTimeoutOrNull(idleTimeoutMs) {
+                            while (incoming.isEmpty) {
+                                delay(READ_POLL_INTERVAL_MS)
+                            }
+                        }
+                    shouldStop = gotMoreData == null || drainAvailableBytes(response)
+                }
             }
         }
-        return shouldStop
+        return cleanResponse(response)
+    }
+
+    /**
+     * Consumes every byte the reader has delivered so far, returning `true` when
+     * the response terminator was seen or the reader has stopped, i.e. reading
+     * should end. A reader that stopped because the source failed rethrows.
+     */
+    private fun drainAvailableBytes(response: StringBuilder): Boolean {
+        while (true) {
+            val result: ChannelResult<Byte> = incoming.tryReceive()
+            if (result.isClosed) {
+                result.exceptionOrNull()?.let { throw it }
+                return true
+            }
+            if (result.isFailure) {
+                return false
+            }
+            val charValue = result.getOrThrow().toInt().toChar()
+            if (charValue == RESPONSE_TERMINATOR) {
+                return true
+            }
+            response.append(charValue)
+        }
     }
 
     private fun cleanResponse(response: StringBuilder): String = removeAll(SEARCHING_PATTERN, response.toString()).trim()
