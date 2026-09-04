@@ -5,8 +5,9 @@ import kotlin.test.assertEquals
 
 class UtilsTest {
     @Test
-    fun `formatFloat matches String format rounding`() {
-        // Expected strings were produced by JVM `"%.Nf".format(value)` on master.
+    fun `formatFloat rounds half away from zero`() {
+        // Only values that are exactly representable as Float, because Kotlin/JS
+        // models Float as a Double; see UtilsJvmTest for the single-precision cases.
         val cases =
             listOf(
                 Triple(-93.75f, 1, "-93.8"),
@@ -14,15 +15,10 @@ class UtilsTest {
                 Triple(-1.25f, 1, "-1.3"),
                 Triple(0.5f, 0, "1"),
                 Triple(1f, 0, "1"),
-                Triple(9.995f, 2, "9.99"),
-                Triple(2.675f, 2, "2.67"),
-                Triple(1.005f, 2, "1.00"),
-                Triple(0.045f, 2, "0.05"),
                 Triple(0.125f, 2, "0.13"),
-                Triple(14.65f, 1, "14.6"),
                 Triple(76.5625f, 2, "76.56"),
-                Triple(123.456f, 1, "123.5"),
-                Triple(12.34f, 2, "12.34"),
+                Triple(123.5f, 0, "124"),
+                Triple(12.25f, 2, "12.25"),
                 Triple(10f, 3, "10.000"),
                 Triple(0f, 2, "0.00"),
             )
