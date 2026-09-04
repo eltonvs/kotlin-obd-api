@@ -20,6 +20,10 @@ class ExceptionsTest {
             "7E8 03 7F 01 12",
             // CAN frame padded out to eight bytes
             "7E8 03 7F 01 11 00 00 00 00",
+            // ISO 9141-2 / KWP2000, where the header is bare address bytes and
+            // the frame ends with a checksum instead of padding
+            "48 F1 7F 01 11",
+            "48 6B 11 7F 01 11 13",
         ).forEach { rawValue ->
             assertFailsWith<UnSupportedCommandException>("Expected exception for: $rawValue") {
                 val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
@@ -36,6 +40,8 @@ class ExceptionsTest {
             "41017F0111",
             "41 01 7F 01 11 00",
             "410D40",
+            // A headered positive response carrying the same payload bytes
+            "48 6B 11 41 01 7F 01 11 13",
         ).forEach { rawValue ->
             val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
             try {
@@ -44,6 +50,17 @@ class ExceptionsTest {
                 throw AssertionError("Should not throw UnSupportedCommandException for: $rawValue")
             } catch (_: Exception) {
                 // Other exceptions are acceptable
+            }
+        }
+    }
+
+    @Test
+    fun `a negative response to another service still throws`() {
+        // A rejection names the service that was rejected, and the response is
+        // not a positive response to this command whichever service that is.
+        listOf("7F0912", "48 F1 7F 09 12").forEach { rawValue ->
+            assertFailsWith<UnSupportedCommandException>("Expected exception for: $rawValue") {
+                command.handleResponse(ObdRawResponse(value = rawValue, elapsedTime = 0))
             }
         }
     }
