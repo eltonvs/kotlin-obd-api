@@ -54,7 +54,7 @@ class FuelRailPressureCommand : ObdCommand() {
 
     override val defaultUnit = "kPa"
     override val handler = { response: ObdRawResponse ->
-        formatFloat((bytesToInt(response.bufferedValue) * FUEL_RAIL_PRESSURE_FACTOR).toFloat(), 3)
+        formatFloat(bytesToInt(response.bufferedValue) * FUEL_RAIL_PRESSURE_FACTOR, 3)
     }
 }
 

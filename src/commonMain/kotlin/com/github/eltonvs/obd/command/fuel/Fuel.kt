@@ -43,7 +43,7 @@ class FuelConsumptionRateCommand : ObdCommand() {
 
     override val defaultUnit = "L/h"
     override val handler = { response: ObdRawResponse ->
-        formatFloat((bytesToInt(response.bufferedValue) * FUEL_CONSUMPTION_FACTOR).toFloat(), 1)
+        formatFloat(bytesToInt(response.bufferedValue) * FUEL_CONSUMPTION_FACTOR, 1)
     }
 }
 
