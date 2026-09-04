@@ -24,6 +24,9 @@ class ExceptionsTest {
             // the frame ends with a checksum instead of padding
             "48 F1 7F 01 11",
             "48 6B 11 7F 01 11 13",
+            // A legacy header byte that reads like this command's positive
+            // response service must not hide the rejection behind it
+            "48 6B 41 7F 01 11 13",
         ).forEach { rawValue ->
             assertFailsWith<UnSupportedCommandException>("Expected exception for: $rawValue") {
                 val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
@@ -34,14 +37,16 @@ class ExceptionsTest {
 
     @Test
     fun `payload bytes that read like a negative response do not throw`() {
-        // The frame is a positive response whose data happens to contain 7F 01 11.
+        // The frame is a positive response to 01 0D whose data happens to
+        // contain 7F 01 11.
         listOf(
             "41 0D 7F",
-            "41017F0111",
-            "41 01 7F 01 11 00",
+            "410D7F0111",
+            "41 0D 7F 01 11 00",
             "410D40",
-            // A headered positive response carrying the same payload bytes
-            "48 6B 11 41 01 7F 01 11 13",
+            // The same payload behind a header, on CAN and on a legacy protocol
+            "7E8 03 41 0D 7F 01 11",
+            "48 6B 11 41 0D 7F 01 11 13",
         ).forEach { rawValue ->
             val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
             try {

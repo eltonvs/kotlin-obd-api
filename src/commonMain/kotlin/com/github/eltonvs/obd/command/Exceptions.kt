@@ -33,17 +33,22 @@ private val NEGATIVE_RESPONSE_CODES = setOf("11", "12")
  * header, and headers vary too much between protocols to recognise directly --
  * a CAN frame ends its header with the payload length (`7E8 03`), while ISO
  * 9141-2 and KWP2000 use bare address bytes (`48 6B 11`). What can be
- * recognised is the alternative: a positive response to [command] starts with
- * `4<service>`, so a frame carrying that byte is payload and is left alone.
- * Without it, data bytes that happen to read `7F 01 11` would be reported as a
- * rejection.
+ * recognised is the alternative: a positive response to [command] opens with
+ * `4<service> <pid>`, so a frame carrying those bytes ahead of the `7F` is
+ * payload and is left alone. Without that, data bytes that happen to read
+ * `7F 01 11` would be reported as a rejection.
+ *
+ * Both bytes are needed, not just the service: a header byte on its own can
+ * equal `4<service>` -- `48 6B 41 7F 01 11` addresses a rejection from source
+ * `0x41` -- and dropping the whole frame on that would hide the rejection.
  */
 private fun String.hasUnsupportedCommandFrame(command: ObdCommand): Boolean {
     val mode = command.mode.sanitize()
     // AT commands have no service byte, so no positive response to tell apart.
     val positiveResponse =
         if (mode.length == BYTE_WIDTH && mode.startsWith('0')) {
-            "$POSITIVE_RESPONSE_PREFIX${mode[1]}"
+            // Modes that take no pid (03, 07, 0A) answer with the service alone.
+            "$POSITIVE_RESPONSE_PREFIX${mode[1]}${command.pid.sanitize()}"
         } else {
             null
         }
