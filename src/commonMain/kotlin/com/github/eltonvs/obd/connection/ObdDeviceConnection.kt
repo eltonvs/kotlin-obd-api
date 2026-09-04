@@ -168,17 +168,34 @@ class ObdDeviceConnection(
                         } else {
                             readPolicy.responseTimeoutMs
                         }
-                    val gotMoreData =
+                    val shouldStopOnNewData =
                         withTimeoutOrNull(idleTimeoutMs) {
-                            while (incoming.isEmpty) {
-                                delay(READ_POLL_INTERVAL_MS)
-                            }
+                            awaitMoreBytes(response)
                         }
-                    shouldStop = gotMoreData == null || drainAvailableBytes(response)
+                    shouldStop = shouldStopOnNewData ?: true
                 }
             }
         }
         return cleanResponse(response)
+    }
+
+    /**
+     * Polls until the reader delivers at least one more byte, returning `true`
+     * when reading should end. Only [Channel.tryReceive] is used, so a timeout
+     * cancelling this cannot strand a byte that was handed to a suspended
+     * receiver.
+     */
+    private suspend fun awaitMoreBytes(response: StringBuilder): Boolean {
+        while (true) {
+            val lengthBefore = response.length
+            if (drainAvailableBytes(response)) {
+                return true
+            }
+            if (response.length > lengthBefore) {
+                return false
+            }
+            delay(READ_POLL_INTERVAL_MS)
+        }
     }
 
     /**
