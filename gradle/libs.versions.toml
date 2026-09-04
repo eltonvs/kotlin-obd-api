@@ -4,7 +4,7 @@ kotlin = "2.4.10"
 kotlinx-coroutines = "1.11.0"
 kotlinx-io = "0.9.1"
 ktlint-plugin = "14.2.0"
-detekt = "2.0.0-alpha.5"
+detekt = "2.0.0-alpha.6"
 
 [libraries]
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
