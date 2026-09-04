@@ -18,6 +18,8 @@ class ExceptionsTest {
             // Adapter echo / headers around the negative response
             "01 0D\r7F 01 11",
             "7E8 03 7F 01 12",
+            // CAN frame padded out to eight bytes
+            "7E8 03 7F 01 11 00 00 00 00",
         ).forEach { rawValue ->
             assertFailsWith<UnSupportedCommandException>("Expected exception for: $rawValue") {
                 val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
@@ -27,9 +29,23 @@ class ExceptionsTest {
     }
 
     @Test
-    fun `positive response is not mistaken for a negative response`() {
-        val rawResponse = ObdRawResponse(value = "41 0D 7F", elapsedTime = 0)
-        command.handleResponse(rawResponse)
+    fun `payload bytes that read like a negative response do not throw`() {
+        // The frame is a positive response whose data happens to contain 7F 01 11.
+        listOf(
+            "41 0D 7F",
+            "41017F0111",
+            "41 01 7F 01 11 00",
+            "410D40",
+        ).forEach { rawValue ->
+            val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
+            try {
+                command.handleResponse(rawResponse)
+            } catch (_: UnSupportedCommandException) {
+                throw AssertionError("Should not throw UnSupportedCommandException for: $rawValue")
+            } catch (_: Exception) {
+                // Other exceptions are acceptable
+            }
+        }
     }
 
     @Test

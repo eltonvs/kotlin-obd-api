@@ -10,9 +10,12 @@ object RegexPatterns {
     val DIGITS_LETTERS_PATTERN: Regex = "([0-9A-F:])+".toRegex()
     val STARTS_WITH_ALPHANUM_PATTERN: Regex = "[^a-z0-9 ]".toRegex(RegexOption.IGNORE_CASE)
 
-    // Negative response: 7F <service 01-0A> <NRC 11 or 12>, matched against the
-    // whitespace-stripped response so adapter echo or headers may surround it.
-    val UNSUPPORTED_COMMAND_PATTERN: Regex = "7F0[0-9A]1[12]".toRegex()
+    // A negative response frame: 7F <service 01-0A> <NRC 11 or 12>, optionally
+    // behind a header whose last byte is the payload length (03) and followed by
+    // frame padding. Matched per line against the whitespace-stripped frame, so
+    // an echoed command or a header does not hide it and payload bytes that
+    // happen to read 7F xx 1x are not mistaken for one.
+    val UNSUPPORTED_COMMAND_FRAME_PATTERN: Regex = "(?:[0-9A-F]*03)?7F0[0-9A]1[12](?:00)*".toRegex()
 
     // Error patterns
     const val BUSINIT_ERROR_MESSAGE_PATTERN = "BUS INIT... ERROR"

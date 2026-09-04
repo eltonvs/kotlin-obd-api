@@ -7,10 +7,18 @@ import com.github.eltonvs.obd.command.RegexPatterns.MISUNDERSTOOD_COMMAND_MESSAG
 import com.github.eltonvs.obd.command.RegexPatterns.NO_DATE_MESSAGE_PATTERN
 import com.github.eltonvs.obd.command.RegexPatterns.STOPPED_MESSAGE_PATERN
 import com.github.eltonvs.obd.command.RegexPatterns.UNABLE_TO_CONNECT_MESSAGE_PATTERN
-import com.github.eltonvs.obd.command.RegexPatterns.UNSUPPORTED_COMMAND_PATTERN
+import com.github.eltonvs.obd.command.RegexPatterns.UNSUPPORTED_COMMAND_FRAME_PATTERN
 import com.github.eltonvs.obd.command.RegexPatterns.WHITESPACE_PATTERN
 
 private fun String.sanitize(): String = removeAll(WHITESPACE_PATTERN, this).uppercase()
+
+/**
+ * True when any frame of the response is an OBD negative response. Frames are
+ * checked one by one: a command echoed back by the adapter arrives as its own
+ * frame, while payload bytes never span two of them.
+ */
+private fun String.hasUnsupportedCommandFrame(): Boolean =
+    split('\r', '\n').any { UNSUPPORTED_COMMAND_FRAME_PATTERN.matches(it.sanitize()) }
 
 abstract class BadResponseException(
     private val command: ObdCommand,
@@ -47,7 +55,7 @@ abstract class BadResponseException(
                         throw UnknownErrorException(command, response)
                     }
 
-                    UNSUPPORTED_COMMAND_PATTERN.containsMatchIn(this) -> {
+                    response.value.hasUnsupportedCommandFrame() -> {
                         throw UnSupportedCommandException(command, response)
                     }
 
