@@ -2,11 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches:
-      - master
+    branches: [master]
   push:
-    branches:
-      - master
+    branches: [master]
 
 permissions:
   contents: read
@@ -26,7 +24,18 @@ jobs:
       - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
         with:
           distribution: temurin
-          java-version: "25"
+          java-version: "17"
       - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
-      - name: Verify
-        run: ./gradlew --no-daemon clean test ktlintCheck detekt
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - name: Build and Test
+        run: ./gradlew build
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-results
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+          retention-days: 7

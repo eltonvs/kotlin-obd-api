@@ -11,9 +11,11 @@
 [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 
 
-A lightweight and developer-driven Kotlin OBD-II (ELM327) library for any Kotlin/JVM project to query and parse OBD commands.
+A lightweight and developer-driven **Kotlin Multiplatform** OBD-II (ELM327) library to query and parse OBD commands.
 
-Written in pure Kotlin and platform agnostic with a simple and easy-to-use interface, so you can hack your car without any hassle. :blue_car:
+Written in pure Kotlin with a simple and easy-to-use interface, so you can hack your car without any hassle. :blue_car:
+
+**Supported platforms:** JVM, iOS, macOS, Linux, Windows, JS, WebAssembly
 
 Use it to read and parse vehicle diagnostics over Bluetooth, Wi-Fi, or USB:
 
@@ -22,7 +24,7 @@ Use it to read and parse vehicle diagnostics over Bluetooth, Wi-Fi, or USB:
 - VIN and monitor status commands
 - Adapter-level AT commands for ELM327 setup
 
-The API is connection-agnostic and receives an `InputStream` and an `OutputStream`, so you can integrate it with your own Bluetooth, Wi-Fi, or USB transport.
+The API is connection-agnostic and receives a `Source` and a `Sink` ([kotlinx-io](https://github.com/Kotlin/kotlinx-io)), so you can integrate it with your own Bluetooth, Wi-Fi, or USB transport on any platform.
 
 ## Installation
 
@@ -80,7 +82,7 @@ You can download a jar from GitHub's [releases page](https://github.com/eltonvs/
 
 ## Quickstart
 
-Get an `InputStream` and an `OutputStream` from your connection interface and create an `ObdDeviceConnection` instance.
+Get a `Source` and a `Sink` from your connection interface and create an `ObdDeviceConnection` instance.
 
 ```kotlin
 import com.github.eltonvs.obd.command.AdaptiveTimingMode
@@ -97,28 +99,31 @@ import com.github.eltonvs.obd.command.control.TroubleCodesCommand
 import com.github.eltonvs.obd.command.control.VINCommand
 import com.github.eltonvs.obd.command.engine.RPMCommand
 import com.github.eltonvs.obd.connection.ObdDeviceConnection
-import java.io.InputStream
-import java.io.OutputStream
+import kotlinx.io.Source
+import kotlinx.io.Sink
 
-suspend fun readObd(inputStream: InputStream, outputStream: OutputStream) {
-    val obdConnection = ObdDeviceConnection(inputStream, outputStream)
+suspend fun readObd(inputStream: Source, outputStream: Sink) {
+    // The connection starts a reader coroutine on first use; close() stops it.
+    // The streams themselves stay owned by the caller.
+    ObdDeviceConnection(inputStream, outputStream).use { obdConnection ->
 
     // Recommended low-noise ELM327 setup
-    obdConnection.run(ResetAdapterCommand())
-    obdConnection.run(SetEchoCommand(Switcher.OFF))
-    obdConnection.run(SetLineFeedCommand(Switcher.OFF))
-    obdConnection.run(SetSpacesCommand(Switcher.OFF))
-    obdConnection.run(SetHeadersCommand(Switcher.OFF))
-    obdConnection.run(SetAdaptiveTimingCommand(AdaptiveTimingMode.AUTO_1))
-    obdConnection.run(SelectProtocolCommand(ObdProtocols.AUTO))
+        obdConnection.run(ResetAdapterCommand())
+        obdConnection.run(SetEchoCommand(Switcher.OFF))
+        obdConnection.run(SetLineFeedCommand(Switcher.OFF))
+        obdConnection.run(SetSpacesCommand(Switcher.OFF))
+        obdConnection.run(SetHeadersCommand(Switcher.OFF))
+        obdConnection.run(SetAdaptiveTimingCommand(AdaptiveTimingMode.AUTO_1))
+        obdConnection.run(SelectProtocolCommand(ObdProtocols.AUTO))
 
-    val rpm = obdConnection.run(RPMCommand())
-    val vin = obdConnection.run(VINCommand(), useCache = true)
-    val troubleCodes = obdConnection.run(TroubleCodesCommand())
+        val rpm = obdConnection.run(RPMCommand())
+        val vin = obdConnection.run(VINCommand(), useCache = true)
+        val troubleCodes = obdConnection.run(TroubleCodesCommand())
 
-    println("RPM: ${rpm.value} ${rpm.unit}")
-    println("VIN: ${vin.value}")
-    println("DTC: ${troubleCodes.value.ifBlank { "none" }}")
+        println("RPM: ${rpm.value} ${rpm.unit}")
+        println("VIN: ${vin.value}")
+        println("DTC: ${troubleCodes.value.ifBlank { "none" }}")
+    }
 }
 ```
 
@@ -138,6 +143,8 @@ Recommended setup profile for faster, lower-noise sessions:
 - `SelectProtocolCommand(knownProtocol)` when the protocol is known, otherwise `SelectProtocolCommand(ObdProtocols.AUTO)`
 
 Runtime note: call `run()` from a background coroutine context (for example `Dispatchers.IO`). On Android, do not call it from the main thread.
+
+Reads are performed by a single reader coroutine, started on the first `run()`, that owns the `Source`. Because `run()` only waits on that reader, its timeout applies even when the underlying stream blocks (sockets, serial ports); end of stream ends the read immediately, and a stream that throws surfaces the error from `run()`. Call `close()` (or use `use { }`) when finished so the reader stops; the `Source`/`Sink` are not closed for you.
 
 Concurrency note: each `ObdDeviceConnection` instance is a serialized command channel guarded by a coroutine `Mutex`. Reuse one instance per physical connection.
 
@@ -216,7 +223,7 @@ Want to help or have something to add to the repo? Found an issue in a specific 
 
 - Open an issue to explain the problem you want to solve: [Open an issue](https://github.com/eltonvs/kotlin-obd-api/issues)
 - After discussion, open a PR (or draft PR for larger contributions): [Current PRs](https://github.com/eltonvs/kotlin-obd-api/pulls)
-- Run local verification before opening a PR: `./gradlew clean test ktlintCheck detekt`
+- Run local verification before opening a PR: `./gradlew clean jvmTest ktlintCheck detekt`
 - Auto-format Kotlin sources when needed: `./gradlew ktlintFormat`
 
 

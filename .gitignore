@@ -133,6 +133,7 @@ Temporary Items
 ### Gradle ###
 .gradle
 build/
+local.properties
 
 # Ignore Gradle GUI config
 gradle-app.setting
@@ -150,3 +151,12 @@ gradle-app.setting
 **/build/
 
 # End of https://www.gitignore.io/api/macos,kotlin,gradle,intellij+iml
+
+### Kotlin Multiplatform ###
+# Kotlin/Native compiler caches
+.kotlin/
+# Kotlin/JS and Kotlin/Wasm output
+kotlin-js-store/
+
+### Claude Code ###
+.claude/
