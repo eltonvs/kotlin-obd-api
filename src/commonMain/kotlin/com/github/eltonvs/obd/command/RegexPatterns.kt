@@ -10,6 +10,10 @@ object RegexPatterns {
     val DIGITS_LETTERS_PATTERN: Regex = "([0-9A-F:])+".toRegex()
     val STARTS_WITH_ALPHANUM_PATTERN: Regex = "[^a-z0-9 ]".toRegex(RegexOption.IGNORE_CASE)
 
+    // Negative response: 7F <service 01-0A> <NRC 11 or 12>, matched against the
+    // whitespace-stripped response so adapter echo or headers may surround it.
+    val UNSUPPORTED_COMMAND_PATTERN: Regex = "7F0[0-9A]1[12]".toRegex()
+
     // Error patterns
     const val BUSINIT_ERROR_MESSAGE_PATTERN = "BUS INIT... ERROR"
     const val MISUNDERSTOOD_COMMAND_MESSAGE_PATTERN = "?"
@@ -17,7 +21,6 @@ object RegexPatterns {
     const val STOPPED_MESSAGE_PATERN = "STOPPED"
     const val UNABLE_TO_CONNECT_MESSAGE_PATTERN = "UNABLE TO CONNECT"
     const val ERROR_MESSAGE_PATTERN = "ERROR"
-    const val UNSUPPORTED_COMMAND_MESSAGE_PATTERN = "7F0[0-A]1[1-2]"
 }
 
 fun removeAll(

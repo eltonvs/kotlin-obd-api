@@ -7,7 +7,7 @@ import com.github.eltonvs.obd.command.RegexPatterns.MISUNDERSTOOD_COMMAND_MESSAG
 import com.github.eltonvs.obd.command.RegexPatterns.NO_DATE_MESSAGE_PATTERN
 import com.github.eltonvs.obd.command.RegexPatterns.STOPPED_MESSAGE_PATERN
 import com.github.eltonvs.obd.command.RegexPatterns.UNABLE_TO_CONNECT_MESSAGE_PATTERN
-import com.github.eltonvs.obd.command.RegexPatterns.UNSUPPORTED_COMMAND_MESSAGE_PATTERN
+import com.github.eltonvs.obd.command.RegexPatterns.UNSUPPORTED_COMMAND_PATTERN
 import com.github.eltonvs.obd.command.RegexPatterns.WHITESPACE_PATTERN
 
 private fun String.sanitize(): String = removeAll(WHITESPACE_PATTERN, this).uppercase()
@@ -47,7 +47,7 @@ abstract class BadResponseException(
                         throw UnknownErrorException(command, response)
                     }
 
-                    matches(UNSUPPORTED_COMMAND_MESSAGE_PATTERN.toRegex()) -> {
+                    UNSUPPORTED_COMMAND_PATTERN.containsMatchIn(this) -> {
                         throw UnSupportedCommandException(command, response)
                     }
 

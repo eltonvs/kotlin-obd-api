@@ -15,12 +15,21 @@ class ExceptionsTest {
             "7F 01 11",
             "7F0A12",
             "7F 0A 12",
+            // Adapter echo / headers around the negative response
+            "01 0D\r7F 01 11",
+            "7E8 03 7F 01 12",
         ).forEach { rawValue ->
             assertFailsWith<UnSupportedCommandException>("Expected exception for: $rawValue") {
                 val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
                 command.handleResponse(rawResponse)
             }
         }
+    }
+
+    @Test
+    fun `positive response is not mistaken for a negative response`() {
+        val rawResponse = ObdRawResponse(value = "41 0D 7F", elapsedTime = 0)
+        command.handleResponse(rawResponse)
     }
 
     @Test
