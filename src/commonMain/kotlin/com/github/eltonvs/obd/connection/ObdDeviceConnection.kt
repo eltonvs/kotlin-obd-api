@@ -21,6 +21,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.yield
 import kotlinx.io.Buffer
 import kotlinx.io.Sink
 import kotlinx.io.Source
@@ -28,6 +29,7 @@ import kotlin.time.TimeSource
 
 private const val LEGACY_READ_RETRY_DELAY_MS = 500L
 private const val READ_POLL_INTERVAL_MS = 10L
+private const val MINIMUM_READ_WINDOW_MS = 50L
 private const val READ_CHUNK_SIZE = 256
 private const val RESPONSE_TERMINATOR = '>'
 
@@ -152,21 +154,32 @@ class ObdDeviceConnection(
 
     private suspend fun readRawData(readPolicy: ObdReadPolicy): String {
         reader.start()
+        // The reader owns the source, so bytes buffered before this command only
+        // reach us once it has been scheduled at least once.
+        yield()
+
         val response = StringBuilder()
 
         // Always drain whatever has already arrived before consulting any timeout,
         // so a fully buffered response is returned even with a zero-length budget.
         var shouldStop = drainAvailableBytes(response)
         if (!shouldStop) {
+            // A zero budget (maxRetries = 0) means "do not wait for the adapter",
+            // not "discard a response that already arrived", so the asynchronous
+            // reader still gets a minimum window to hand it over. An explicit
+            // non-zero policy is used exactly as given.
+            val responseBudgetMs = readPolicy.responseTimeoutMs.orMinimumWindow()
+            val interByteBudgetMs = readPolicy.interByteTimeoutMs.orMinimumWindow()
+
             // The whole read is capped by the response budget; each gap between
             // bytes is capped by the (usually shorter) inter-byte budget.
-            withTimeoutOrNull(readPolicy.responseTimeoutMs) {
+            withTimeoutOrNull(responseBudgetMs) {
                 while (!shouldStop) {
                     val idleTimeoutMs =
                         if (response.isNotEmpty()) {
-                            readPolicy.interByteTimeoutMs
+                            interByteBudgetMs
                         } else {
-                            readPolicy.responseTimeoutMs
+                            responseBudgetMs
                         }
                     val shouldStopOnNewData =
                         withTimeoutOrNull(idleTimeoutMs) {
@@ -220,6 +233,8 @@ class ObdDeviceConnection(
             response.append(charValue)
         }
     }
+
+    private fun Long.orMinimumWindow(): Long = if (this == 0L) MINIMUM_READ_WINDOW_MS else this
 
     private fun cleanResponse(response: StringBuilder): String = removeAll(SEARCHING_PATTERN, response.toString()).trim()
 

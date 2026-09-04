@@ -66,6 +66,21 @@ class BlockingSourceTest {
         }
 
     @Test
+    fun `returns already buffered data with a zero retry budget`() =
+        runBlocking {
+            val input = BlockingSource()
+            ObdDeviceConnection(input.buffered(), Buffer(), Dispatchers.IO).use { connection ->
+                input.feed("410D40>")
+                val response =
+                    withTimeout(3_000) {
+                        connection.run(BlockingTestCommand(tag = "SPEED", pid = "0D"), maxRetries = 0)
+                    }
+                assertEquals("410D40", response.value)
+            }
+            input.close()
+        }
+
+    @Test
     fun `end of stream ends the read immediately`() =
         runBlocking {
             val input = BlockingSource()

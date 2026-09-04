@@ -390,6 +390,27 @@ class ObdDeviceConnectionTest {
                 connection.close()
             }
         }
+
+    @Test
+    fun `returns already buffered data when max retries is zero`() =
+        runTest {
+            val testDispatcher = StandardTestDispatcher(testScheduler)
+            val input = Buffer()
+            val output = Buffer()
+            val connection = ObdDeviceConnection(input, output, testDispatcher)
+            try {
+                val command = TestObdCommand(tag = "SPEED", pid = "0D")
+
+                input.write("410D40>".encodeToByteArray())
+
+                // A zero budget means "do not wait for the adapter", not
+                // "throw away a response that already arrived".
+                val response = connection.run(command, maxRetries = 0)
+                assertEquals("410D40", response.value)
+            } finally {
+                connection.close()
+            }
+        }
 }
 
 private class TestObdCommand(
