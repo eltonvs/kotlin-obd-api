@@ -19,7 +19,7 @@ object RegexPatterns {
     const val STOPPED_MESSAGE_PATERN = "STOPPED"
     const val UNABLE_TO_CONNECT_MESSAGE_PATTERN = "UNABLE TO CONNECT"
     const val ERROR_MESSAGE_PATTERN = "ERROR"
-    const val UNSUPPORTED_COMMAND_MESSAGE_PATTERN = "7F 0[0-A] 1[1-2]"
+    const val UNSUPPORTED_COMMAND_MESSAGE_PATTERN = "7F0[0-A]1[1-2]"
 }
 
 fun removeAll(
