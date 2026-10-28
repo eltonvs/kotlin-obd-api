@@ -54,6 +54,8 @@ jobs:
           distribution: temurin
           java-version: "25"
       - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
+        with:
+          cache-disabled: true
       - name: Verify and build artifacts
         env:
           VERSION: ${{ steps.plan.outputs.version }}
@@ -108,7 +110,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
         if: steps.credentials.outputs.available == 'true'
         with:
-          cache-read-only: true
+          cache-disabled: true
       - name: Publish and release to Maven Central
         if: steps.credentials.outputs.available == 'true'
         env:
