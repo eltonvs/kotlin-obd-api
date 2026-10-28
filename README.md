@@ -224,6 +224,8 @@ Want to help or have something to add to the repo? Found an issue in a specific 
 
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/eltonvs/kotlin-obd-api/tags).
 
+Releases are cut from `vX.Y.Z` tags on `master` (or on maintenance branches such as `1.x`). Pre-releases such as `2.0.0-beta.1` are marked as such on the [releases page](https://github.com/eltonvs/kotlin-obd-api/releases). Maintainers: see [RELEASING.md](RELEASING.md).
+
 
 ## Authors
 
