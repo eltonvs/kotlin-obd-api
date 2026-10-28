@@ -97,7 +97,14 @@ jobs:
           git tag -a "$TAG" -m "Release $TAG"
 
           # All or nothing: if the branch moved or rejects the push, no tag is created either.
-          git push --atomic origin "${refs[@]}"
+          if ! git push --atomic origin "${refs[@]}"; then
+            if [ "$DOCS_CHANGED" = true ]; then
+              echo "::error::Push rejected; no tag was created. Either $GITHUB_REF_NAME moved since this run started, or its ruleset rejects the chore(release) commit. In the second case, run Release again with update_docs unchecked (see RELEASING.md)."
+            else
+              echo "::error::Push of $TAG rejected; no tag was created."
+            fi
+            exit 1
+          fi
           echo "Pushed $TAG ($(git rev-parse HEAD))" >> "$GITHUB_STEP_SUMMARY"
       - name: Start the Publish workflow
         env:
