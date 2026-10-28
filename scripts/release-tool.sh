@@ -124,11 +124,12 @@ semver_compare() {
     fi
 }
 
-# Release versions of every vX.Y.Z[-pre] tag in the clone, one per line.
-# With a commit argument, only tags reachable from that commit are listed.
+# Release versions of the vX.Y.Z[-pre] tags in the clone, one per line.
+# Arguments are passed to "git tag --list" as filters, e.g. --merged <commit>;
+# several --merged filters match tags reachable from any of the commits.
 release_versions() {
     local tag version
-    git tag --list ${1:+--merged "$1"} 'v*' | while IFS= read -r tag; do
+    git tag --list "$@" 'v*' | while IFS= read -r tag; do
         version="${tag#v}"
         if is_semver "$version"; then
             echo "$version"
@@ -164,6 +165,23 @@ remote_branch_exists() {
     git show-ref --verify --quiet "refs/remotes/$REMOTE/$1"
 }
 
+# The branch a major is released from: N.x once it exists, master before that.
+line_branch_of() {
+    if remote_branch_exists "$1.x"; then
+        echo "$1.x"
+    else
+        echo master
+    fi
+}
+
+# True when tag v<version> is on the branch its major is released from.
+on_release_line() {
+    local version="$1" branch
+    branch="$(line_branch_of "$(major_of "$version")")"
+    remote_branch_exists "$branch" &&
+        git merge-base --is-ancestor "refs/tags/v$version" "refs/remotes/$REMOTE/$branch"
+}
+
 cmd_validate_version() {
     is_semver "${1:?version required}" || die "'$1' is not a SemVer version (MAJOR.MINOR.PATCH[-PRERELEASE], no 'v' prefix)."
 }
@@ -197,7 +215,7 @@ cmd_release_plan() {
     # from HEAD (the commit being released); on N.x with every N.* release.
     local highest
     if [[ "$branch" == master ]]; then
-        highest="$(release_versions HEAD | highest_version)"
+        highest="$(release_versions --merged HEAD | highest_version)"
     else
         highest="$(release_versions | highest_version --major "$major")"
     fi
@@ -214,7 +232,9 @@ cmd_release_plan() {
     fi
 }
 
-# Decides how a pushed tag is published and presented on GitHub.
+# Decides whether a pushed tag may be published, and how it is presented on GitHub.
+# This is the only check a hand-pushed tag goes through, so it repeats the line rules
+# of release-plan that can be checked after the fact.
 cmd_publish_plan() {
     local tag="${1:?tag required}"
     [[ "$tag" == v* ]] || die "Release tags start with 'v': $tag"
@@ -223,31 +243,48 @@ cmd_publish_plan() {
     local major
     major="$(major_of "$version")"
 
-    local sha ref allowed=false
-    sha="$(git rev-parse --verify "refs/tags/$tag^{commit}")" || die "Tag $tag not found."
-    while IFS= read -r ref; do
-        if [[ "$ref" == "refs/remotes/$REMOTE/master" || "$ref" == "refs/remotes/$REMOTE/$major.x" ]]; then
-            allowed=true
-        fi
-    done < <(git for-each-ref --contains "$sha" --format='%(refname)' "refs/remotes/$REMOTE/")
-    if [[ "$allowed" != true ]]; then
-        die "Tag $tag ($sha) is not reachable from $REMOTE/master or $REMOTE/$major.x. Push the branch before the tag."
+    local sha
+    sha="$(git rev-parse --verify --quiet "refs/tags/$tag^{commit}")" || die "Tag $tag not found."
+
+    # A major with a maintenance branch is released from that branch only; every other
+    # major from master. Older tags of the line stay valid because N.x is cut from one.
+    local line_branch
+    line_branch="$(line_branch_of "$major")"
+    remote_branch_exists "$line_branch" || die "$REMOTE/$line_branch not found; fetch it before publishing."
+    if ! on_release_line "$version"; then
+        die "Tag $tag ($sha) is not on $REMOTE/$line_branch, where $major.y.z releases are cut. Push the branch before the tag."
+    fi
+
+    # Versions only move forward: the tag must be above every release in its history.
+    # Tags on the same commit are ignored, so v2.0.0 can sit next to v2.0.0-rc.2.
+    local previous
+    previous="$(release_versions --merged "$sha" --no-contains "$sha" | highest_version)"
+    if [[ -n "$previous" && "$(semver_compare "$version" "$previous")" != 1 ]]; then
+        die "$tag must be greater than v$previous, an earlier release in its history."
     fi
 
     # "Latest" goes to the highest stable version only, so a 1.x patch published after
-    # 2.0.0 or a pre-release never takes the badge. Release notes start at the previous
-    # release that is an ancestor of this tag (previous stable one for stable releases).
+    # 2.0.0 or a pre-release never takes the badge. Only tags that pass the branch check
+    # above count, so a stray tag on another branch cannot hold the badge. Release notes
+    # start at the previous release that is an ancestor of this tag (the previous stable
+    # one for stable releases).
     local prerelease=false latest=false notes_start
     if is_prerelease "$version"; then
         prerelease=true
-        notes_start="$(release_versions "$sha" | highest_version --below "$version")"
+        notes_start="$(release_versions --merged "$sha" | highest_version --below "$version")"
     else
         local highest_stable
-        highest_stable="$(release_versions | highest_version --stable)"
+        highest_stable="$(
+            release_versions | while IFS= read -r candidate; do
+                if ! is_prerelease "$candidate" && on_release_line "$candidate"; then
+                    echo "$candidate"
+                fi
+            done | highest_version --stable
+        )"
         if [[ -z "$highest_stable" || "$(semver_compare "$version" "$highest_stable")" != -1 ]]; then
             latest=true
         fi
-        notes_start="$(release_versions "$sha" | highest_version --stable --below "$version")"
+        notes_start="$(release_versions --merged "$sha" | highest_version --stable --below "$version")"
     fi
 
     echo "version=$version"
