@@ -54,7 +54,7 @@ class RuntimeCommand : ObdCommand() {
     override val tag = "ENGINE_RUNTIME"
     override val name = "Engine Runtime"
     override val mode = "01"
-    override val pid = "0F"
+    override val pid = "1F"
 
     override val handler = { response: ObdRawResponse -> parseRuntime(response.bufferedValue) }
 

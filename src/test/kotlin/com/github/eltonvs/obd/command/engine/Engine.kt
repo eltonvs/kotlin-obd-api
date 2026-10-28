@@ -117,6 +117,11 @@ class RuntimeCommandParameterizedTests(
     }
 
     @Test
+    fun `test runtime command requests pid 1F`() {
+        assertEquals("01 1F", RuntimeCommand().rawCommand)
+    }
+
+    @Test
     fun `test valid runtime responses handler`() {
         val rawResponse = ObdRawResponse(value = rawValue, elapsedTime = 0)
         val obdResponse =
