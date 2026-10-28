@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # Keeps the SHA-pinned actions (and their version comments) current.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+  # Reads gradle/libs.versions.toml and the Gradle wrapper.
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
