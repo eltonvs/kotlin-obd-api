@@ -1,0 +1,157 @@
+name: Publish
+
+# Publishes a release tag (vX.Y.Z or vX.Y.Z-pre.N): verifies the tagged commit,
+# uploads to Maven Central when enabled, and creates the GitHub release. JitPack
+# builds the tag on its own when someone first requests it. See RELEASING.md.
+
+on:
+  push:
+    tags:
+      - "v*"
+  # The Release workflow dispatches this on the new tag, because tags pushed with
+  # GITHUB_TOKEN do not trigger push events. It can also be run by hand on a tag
+  # to retry a failed publication.
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      tag: ${{ steps.plan.outputs.tag }}
+      prerelease: ${{ steps.plan.outputs.prerelease }}
+      latest: ${{ steps.plan.outputs.latest }}
+      notes_start_tag: ${{ steps.plan.outputs.notes_start_tag }}
+    steps:
+      - name: Require a tag
+        run: |
+          if [ "$GITHUB_REF_TYPE" != tag ]; then
+            echo "::error::Publish runs on release tags only, not on $GITHUB_REF_TYPE '$GITHUB_REF_NAME'."
+            exit 1
+          fi
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0 # all tags and branches, for the provenance and "Latest" checks
+          persist-credentials: false
+      - name: Check the tag
+        id: plan
+        run: ./scripts/release-tool.sh publish-plan "$GITHUB_REF_NAME" | tee -a "$GITHUB_OUTPUT"
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
+        with:
+          distribution: temurin
+          java-version: "25"
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
+      - name: Verify and build artifacts
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          ./gradlew --no-daemon clean test ktlintCheck detekt publishToMavenLocal
+          for suffix in "" -sources -javadoc; do
+            jar="build/libs/kotlin-obd-api-$VERSION$suffix.jar"
+            if [ ! -f "$jar" ]; then
+              echo "::error::Expected $jar; the build did not pick up version $VERSION from the tag."
+              exit 1
+            fi
+          done
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-artifacts
+          path: build/libs/kotlin-obd-api-${{ steps.plan.outputs.version }}*.jar
+          if-no-files-found: error
+          retention-days: 7
+
+  maven-central:
+    name: maven-central
+    needs: verify
+    # Opt-in: set the repository variable MAVEN_CENTRAL_PUBLISHING to "true" once the
+    # Central namespace and the release environment secrets exist. Without it the job
+    # is skipped and does not wait for environment approval.
+    if: vars.MAVEN_CENTRAL_PUBLISHING == 'true'
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+    steps:
+      - name: Check credentials
+        id: credentials
+        env:
+          HAS_CREDENTIALS: ${{ secrets.MAVEN_CENTRAL_USERNAME != '' && secrets.MAVEN_CENTRAL_PASSWORD != '' && secrets.SIGNING_KEY != '' && secrets.SIGNING_KEY_PASSWORD != '' }}
+        run: |
+          if [ "$HAS_CREDENTIALS" = true ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::Maven Central or signing secrets are missing in the release environment; skipping Maven Central."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        if: steps.credentials.outputs.available == 'true'
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
+        if: steps.credentials.outputs.available == 'true'
+        with:
+          distribution: temurin
+          java-version: "25"
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
+        if: steps.credentials.outputs.available == 'true'
+        with:
+          cache-read-only: true
+      - name: Publish and release to Maven Central
+        if: steps.credentials.outputs.available == 'true'
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
+        run: ./gradlew --no-daemon publishAndReleaseToMavenCentral
+
+  github-release:
+    name: github-release
+    needs: [verify, maven-central]
+    # Runs when Maven Central succeeded or was skipped, never after a failed upload.
+    if: ${{ !cancelled() && needs.verify.result == 'success' && (needs.maven-central.result == 'success' || needs.maven-central.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub release
+    env:
+      TAG: ${{ needs.verify.outputs.tag }}
+      PRERELEASE: ${{ needs.verify.outputs.prerelease }}
+      LATEST: ${{ needs.verify.outputs.latest }}
+      NOTES_START_TAG: ${{ needs.verify.outputs.notes_start_tag }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-artifacts
+          path: dist
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::notice::GitHub release $TAG already exists; leaving it unchanged."
+            exit 0
+          fi
+
+          # Pre-releases and older-line patches (e.g. 1.4.3 after 2.0.0) must not take "Latest".
+          args=(--repo "$GITHUB_REPOSITORY" --verify-tag --title "$TAG" --generate-notes "--latest=$LATEST")
+          if [ "$PRERELEASE" = true ]; then
+            args+=(--prerelease)
+          fi
+          if [ -n "$NOTES_START_TAG" ]; then
+            args+=(--notes-start-tag "$NOTES_START_TAG")
+          fi
+          gh release create "$TAG" "${args[@]}" dist/*.jar

@@ -1,0 +1,105 @@
+name: Release
+
+# Cuts a release from master or a maintenance branch (N.x): checks the version,
+# runs the build, optionally commits the README/llms.txt install snippets, pushes
+# an annotated vX.Y.Z tag and starts the Publish workflow on it. See RELEASING.md.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version without the v prefix, e.g. 1.4.2, 2.0.0-beta.1"
+        required: true
+        type: string
+      update_docs:
+        description: "Stable releases only: commit the README/llms.txt install snippets to the branch before tagging"
+        required: true
+        default: true
+        type: boolean
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  plan:
+    name: plan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      tag: ${{ steps.plan.outputs.tag }}
+      prerelease: ${{ steps.plan.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check the release is allowed
+        id: plan
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [ "$GITHUB_REF_TYPE" != branch ]; then
+            echo "::error::Run this workflow from master or a maintenance branch (N.x)."
+            exit 1
+          fi
+          ./scripts/release-tool.sh release-plan "$GITHUB_REF_NAME" "$INPUT_VERSION" | tee -a "$GITHUB_OUTPUT"
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
+        with:
+          distribution: temurin
+          java-version: "25"
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
+      - name: Verify
+        run: ./gradlew --no-daemon clean test ktlintCheck detekt
+
+  tag:
+    name: tag
+    needs: plan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push the release commit and tag
+      actions: write # dispatch publish.yml: pushes made with GITHUB_TOKEN do not trigger workflows
+    env:
+      VERSION: ${{ needs.plan.outputs.version }}
+      TAG: ${{ needs.plan.outputs.tag }}
+      UPDATE_DOCS: ${{ inputs.update_docs && needs.plan.outputs.prerelease == 'false' }}
+    steps:
+      # Same commit as the plan job (github.sha). This job pushes, so it keeps the
+      # checkout credentials; it runs no build tooling.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: true
+      - name: Update install snippets
+        id: docs
+        if: env.UPDATE_DOCS == 'true'
+        run: ./scripts/release-tool.sh update-docs "$VERSION" | tee -a "$GITHUB_OUTPUT"
+      - name: Commit, tag and push
+        env:
+          DOCS_CHANGED: ${{ steps.docs.outputs.changed }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          refs=("refs/tags/$TAG")
+          if [ "$DOCS_CHANGED" = true ]; then
+            git add README.md llms.txt
+            git commit -m "chore(release): $TAG"
+            refs+=("HEAD:refs/heads/$GITHUB_REF_NAME")
+          fi
+          git tag -a "$TAG" -m "Release $TAG"
+
+          # All or nothing: if the branch moved or rejects the push, no tag is created either.
+          git push --atomic origin "${refs[@]}"
+          echo "Pushed $TAG ($(git rev-parse HEAD))" >> "$GITHUB_STEP_SUMMARY"
+      - name: Start the Publish workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run publish.yml --repo "$GITHUB_REPOSITORY" --ref "$TAG"
