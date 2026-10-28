@@ -116,8 +116,14 @@ jobs:
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
-        run: ./gradlew --no-daemon publishAndReleaseToMavenCentral
+          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
+        run: |
+          # SIGNING_KEY_ID is optional. An unset secret expands to "", and Gradle treats an
+          # empty signingInMemoryKeyId as a key ID, which makes signing fail.
+          if [ -n "$SIGNING_KEY_ID" ]; then
+            export ORG_GRADLE_PROJECT_signingInMemoryKeyId="$SIGNING_KEY_ID"
+          fi
+          ./gradlew --no-daemon publishAndReleaseToMavenCentral
 
   github-release:
     name: github-release
