@@ -150,3 +150,29 @@ gradle-app.setting
 **/build/
 
 # End of https://www.gitignore.io/api/macos,kotlin,gradle,intellij+iml
+
+### Local tooling ###
+local.properties
+context.md
+.worktrees/
+.kotlin/
+.idea/caches/
+
+### AI coding agents ###
+# Personal agent config and state. Shared instruction files
+# (AGENTS.md, CLAUDE.md) are intentionally not ignored.
+.agents/
+skills-lock.json
+.claude/
+CLAUDE.local.md
+.codex/
+.cursor/
+.windsurf/
+.gemini/
+.aider*
+.continue/
+.cline/
+.roo/
+.junie/
+.kiro/
+.pi/
