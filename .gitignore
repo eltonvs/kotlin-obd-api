@@ -154,9 +154,25 @@ gradle-app.setting
 ### Local tooling ###
 local.properties
 context.md
-.agents/
-.pi/
 .worktrees/
 .kotlin/
-skills-lock.json
 .idea/caches/
+
+### AI coding agents ###
+# Personal agent config and state. Shared instruction files
+# (AGENTS.md, CLAUDE.md) are intentionally not ignored.
+.agents/
+skills-lock.json
+.claude/
+CLAUDE.local.md
+.codex/
+.cursor/
+.windsurf/
+.gemini/
+.aider*
+.continue/
+.cline/
+.roo/
+.junie/
+.kiro/
+.pi/
