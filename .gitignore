@@ -150,3 +150,13 @@ gradle-app.setting
 **/build/
 
 # End of https://www.gitignore.io/api/macos,kotlin,gradle,intellij+iml
+
+### Local tooling ###
+local.properties
+context.md
+.agents/
+.pi/
+.worktrees/
+.kotlin/
+skills-lock.json
+.idea/caches/
